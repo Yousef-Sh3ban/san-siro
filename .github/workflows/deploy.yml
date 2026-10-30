@@ -23,10 +23,11 @@ jobs:
         run: npm install -g @google/clasp
 
       - name: 🔑 Configure Clasp Credentials
+        env:
+          CLASPRC_CONTENT: ${{ secrets.CLASPRC_JSON }}
         run: |
-          mkdir -p ~/.clasprc.json
-          echo "${{ secrets.CLASPRC_JSON }}" > ~/.clasprc.json
-          chmod 600 ~/.clasprc.json
+          echo "$CLASPRC_CONTENT" > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
 
       - name: 📝 Set Custom Script ID (if secret is configured)
         if: "${{ env.CUSTOM_SCRIPT_ID != '' }}"
