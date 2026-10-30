@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>لوحة تحكم الإدارة ⚽ | San Siro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #0B1915;
+      --bg-surface: #122B24;
+      --bg-card: #18382F;
+      --primary: #0B6E4F;
+      --primary-light: #108A64;
+      --accent-gold: #F2C94C;
+      --danger: #EF4444;
+      --warning: #F59E0B;
+      --info: #3B82F6;
+      --text-main: #FFFFFF;
+      --text-muted: #9CA3AF;
+      --text-dim: #6B7280;
+      --border-color: #214C3F;
+      --font-family: 'Cairo', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      padding: 16px;
+      padding-bottom: 60px;
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0 16px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 16px;
+    }
+
+    .brand {
+      font-size: 20px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .refresh-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* KPI Summary Row */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+
+    .kpi-val {
+      font-size: 18px;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+
+    .kpi-lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Tab Switcher */
+    .tab-bar {
+      display: flex;
+      background: var(--bg-surface);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      padding: 4px;
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font-family);
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #FFFFFF;
+      box-shadow: 0 4px 10px rgba(11, 110, 79, 0.4);
+    }
+
+    /* Booking Cards */
+    .pitch-section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent-gold);
+      margin: 18px 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .booking-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .match-time {
+      font-size: 15px;
+      font-weight: 800;
+      direction: ltr;
+    }
+
+    .status-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .status-Confirmed { background: #064E3B; color: #34D399; }
+    .status-Pending { background: #78350F; color: #FCD34D; }
+    .status-OwnerReserved { background: #1E3A8A; color: #93C5FD; }
+    .status-NoShow { background: #7F1D1D; color: #FCA5A5; }
+
+    .card-body {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .player-line {
+      font-size: 15px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .phone-link {
+      color: #34D399;
+      text-decoration: none;
+      font-weight: 600;
+      direction: ltr;
+      display: inline-block;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-act {
+      flex: 1;
+      min-width: 120px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      font-family: var(--font-family);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-wa {
+      background: #25D366;
+      color: #FFFFFF;
+    }
+
+    .btn-confirm {
+      background: #0B6E4F;
+      color: #FFFFFF;
+    }
+
+    .btn-noshow {
+      background: #7F1D1D;
+      color: #FCA5A5;
+      border: 1px solid #B91C1C;
+    }
+
+    .btn-cancel {
+      background: #374151;
+      color: #D1D5DB;
+    }
+
+    .sent-badge {
+      font-size: 12px;
+      color: #34D399;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+
+    /* Form Styles */
+    .admin-form {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #FFFFFF;
+      font-family: var(--font-family);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--primary);
+      color: #FFFFFF;
+      border: none;
+      font-family: var(--font-family);
+      font-size: 15px;
+      font-weight: 700;
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .toast {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1F2937;
+      color: #FFFFFF;
+      border: 1px solid #374151;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 1000;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="toast" class="toast"></div>
+
+  <div class="container">
+    <header>
+      <div class="brand">
+        <span>⚽</span> لوحة تحكم سان سيرو
+      </div>
+      <button class="refresh-btn" onclick="loadDashboard()">
+        <span>🔄</span> تحديث
+      </button>
+    </header>
+
+    <!-- Top Summary Metrics -->
+    <div class="summary-grid">
+      <div class="kpi-card">
+        <div class="kpi-lbl">مباريات اليوم</div>
+        <div class="kpi-val" id="sumTodayMatches" style="color: #34D399;">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-lbl">النقدية المتوقعة</div>
+        <div class="kpi-val" id="sumExpectedCash" style="color: var(--accent-gold);">0 ج.م</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-lbl">عربين تنتظر التأكيد</div>
+        <div class="kpi-val" id="sumPendingCount" style="color: #F87171;">0</div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabBtnToday" onclick="setTab('today')">مباريات اليوم</button>
+      <button class="tab-btn" id="tabBtnTomorrow" onclick="setTab('tomorrow')">غداً (التذكيرات) 📲</button>
+      <button class="tab-btn" id="tabBtnAdd" onclick="setTab('add')">➕ حجز / إغلاق</button>
+    </div>
+
+    <!-- TAB 1: TODAY MATCHES -->
+    <div id="tabToday">
+      <div id="todayList">جاري التحميل...</div>
+    </div>
+
+    <!-- TAB 2: TOMORROW MATCHES (REMINDER DISPATCH) -->
+    <div id="tabTomorrow" style="display: none;">
+      <div style="background: rgba(16, 138, 100, 0.15); border: 1px solid var(--primary-light); padding: 12px; border-radius: 10px; margin-bottom: 14px; font-size: 13px;">
+        📲 <strong>تذكيرات مباريات الغد:</strong> اضغط على الزر بجانب كل مباراة لفتح محادثة واتساب الرسمية مع الكابتن فوراً بالرسالة المخصصة وموعد الإلغاء الأخير.
+      </div>
+      <div id="tomorrowList">جاري التحميل...</div>
+    </div>
+
+    <!-- TAB 3: MANUAL BOOKING & SLOT BLOCKING -->
+    <div id="tabAdd" style="display: none;">
+      <div class="admin-form">
+        <h3 style="margin-bottom: 14px; font-size: 16px;">تسجيل حجز هاتفي أو إغلاق فترة</h3>
+
+        <div class="form-group">
+          <label class="form-label">نوع العملية</label>
+          <select id="formActionType" class="form-select" onchange="toggleFormMode()">
+            <option value="booking">حجز هاتفي لكابتن</option>
+            <option value="block">إغلاق فترة للصيانة / مناسبة</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">الملعب</label>
+          <select id="formPitch" class="form-select" onchange="refreshAdminSlots()">
+            <option value="Pitch 1">ملعب 1</option>
+            <option value="Pitch 2">ملعب 2</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">التاريخ</label>
+          <input type="date" id="formDate" class="form-input" onchange="refreshAdminSlots()">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">الفترة المتاحة</label>
+          <select id="formSlot" class="form-select">
+            <option value="">اختر الملعب والتاريخ أولاً</option>
+          </select>
+        </div>
+
+        <div id="bookingFields">
+          <div class="form-group">
+            <label class="form-label">اسم الكابتن</label>
+            <input type="text" id="formName" class="form-input" placeholder="اسم الكابتن">
+          </div>
+          <div class="form-group">
+            <label class="form-label">رقم الهاتف (اختياري)</label>
+            <input type="tel" id="formPhone" class="form-input" placeholder="01xxxxxxxxx">
+          </div>
+          <div class="form-group">
+            <label class="form-label">سعر خاص (اتركه فارغاً للسعر الافتراضي)</label>
+            <input type="number" id="formPrice" class="form-input" placeholder="مثال: 250">
+          </div>
+        </div>
+
+        <div id="blockFields" style="display: none;">
+          <div class="form-group">
+            <label class="form-label">سبب الإغلاق</label>
+            <input type="text" id="formBlockReason" class="form-input" placeholder="مثال: صيانة أرضية النجيل أو مناسبة خاصة">
+          </div>
+        </div>
+
+        <button class="btn-submit" onclick="submitAdminForm()">حفظ في الجدول 💾</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Injected template admin key from Code.gs
+    const ADMIN_KEY = <?= JSON.stringify(adminKey) ?>;
+
+    let dashboardData = null;
+
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 3000);
+    }
+
+    function api(fnName, ...args) {
+      return new Promise((resolve, reject) => {
+        google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(reject)[fnName](...args);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // Set default form date to today
+      const todayIso = new Date().toISOString().split('T')[0];
+      document.getElementById('formDate').value = todayIso;
+
+      loadDashboard();
+      refreshAdminSlots();
+    });
+
+    async function loadDashboard() {
+      try {
+        const res = await api('getAdminDashboard', ADMIN_KEY);
+        if (!res || !res.ok) {
+          toast(res ? res.message : 'فشل تحميل البيانات');
+          return;
+        }
+
+        dashboardData = res.data;
+
+        // Update KPIs
+        document.getElementById('sumTodayMatches').textContent = dashboardData.summary.todayConfirmedMatches;
+        document.getElementById('sumExpectedCash').textContent = dashboardData.summary.todayExpectedCash + ' ج.م';
+        document.getElementById('sumPendingCount').textContent = dashboardData.summary.pendingReviewCount;
+
+        // Render Tabs
+        renderMatchList('todayList', dashboardData.selectedMatches, false);
+        renderMatchList('tomorrowList', dashboardData.tomorrowMatches, true);
+      } catch (e) {
+        toast('خطأ في الاتصال: ' + e.message);
+      }
+    }
+
+    function renderMatchList(containerId, matchesByPitch, isTomorrow) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = '';
+
+      const all = [...matchesByPitch.pitch1, ...matchesByPitch.pitch2];
+      if (all.length === 0) {
+        el.innerHTML = '<div style="text-align: center; color: var(--text-dim); padding: 30px;">لا توجد مباريات مسجلة لهذا اليوم.</div>';
+        return;
+      }
+
+      ['pitch1', 'pitch2'].forEach((pKey, idx) => {
+        const pMatches = matchesByPitch[pKey];
+        if (pMatches.length === 0) return;
+
+        const title = document.createElement('div');
+        title.className = 'pitch-section-title';
+        title.innerHTML = `<span>🏟️</span> ${idx === 0 ? 'ملعب 1 (Pitch 1)' : 'ملعب 2 (Pitch 2)'} (${pMatches.length})`;
+        el.appendChild(title);
+
+        pMatches.forEach(m => {
+          const card = document.createElement('div');
+          card.className = 'booking-card';
+
+          const sentKey = 'rem_sent_' + m.bookingId;
+          const isSent = sessionStorage.getItem(sentKey);
+
+          let actionButtons = '';
+          if (isTomorrow) {
+            if (m.reminderUrl) {
+              actionButtons = `
+                <a href="${m.reminderUrl}" target="_blank" class="btn-act btn-wa" onclick="markSent('${m.bookingId}')">
+                  <span>📲</span> إرسال تذكير واتساب
+                  ${isSent ? '<span class="sent-badge">✓ تم الإرسال</span>' : ''}
+                </a>
+              `;
+            }
+          } else {
+            // Today Quick Actions
+            if (m.status === 'Pending Deposit') {
+              actionButtons = `
+                <button class="btn-act btn-confirm" onclick="updateStatus('${m.bookingId}', 'Confirmed')">✅ تأكيد العربون</button>
+                <button class="btn-act btn-cancel" onclick="updateStatus('${m.bookingId}', 'Cancelled')">❌ إلغاء</button>
+              `;
+            } else if (m.status === 'Confirmed' || m.status === 'Owner Reserved') {
+              actionButtons = `
+                <button class="btn-act btn-noshow" onclick="flagNoShow('${m.bookingId}')">🚫 لم يحضر (No-Show)</button>
+              `;
+            }
+          }
+
+          card.innerHTML = `
+            <div class="card-top">
+              <div class="match-time">${m.timeSlot}</div>
+              <span class="status-pill status-${m.status.replace(/\s+/g, '')}">${m.status}</span>
+            </div>
+            <div class="card-body">
+              <div class="player-line">
+                <span>${m.playerName}</span>
+                ${m.phone ? `<a href="tel:${m.phone}" class="phone-link">📞 ${m.phone}</a>` : ''}
+              </div>
+              <div>السعر: ${m.price} ج.م • العربون: ${m.deposit} ج.م • <strong>المتبقي كاش: ${m.remainingCash} ج.م</strong></div>
+            </div>
+            ${actionButtons ? `<div class="card-actions">${actionButtons}</div>` : ''}
+          `;
+          el.appendChild(card);
+        });
+      });
+    }
+
+    function markSent(bookingId) {
+      sessionStorage.setItem('rem_sent_' + bookingId, 'true');
+      setTimeout(loadDashboard, 500);
+    }
+
+    async function updateStatus(bookingId, newStatus) {
+      if (!confirm(`هل أنت متأكد من تغيير حالة الحجز إلى ${newStatus}؟`)) return;
+
+      try {
+        const res = await api('adminSetStatus', ADMIN_KEY, bookingId, newStatus);
+        if (!res || !res.ok) {
+          toast(res ? res.message : 'فشل التحديث');
+          return;
+        }
+        toast(res.data.message);
+        loadDashboard();
+      } catch (e) {
+        toast('خطأ: ' + e.message);
+      }
+    }
+
+    async function flagNoShow(bookingId) {
+      if (!confirm('تنبيه: سيؤدي تسجيل حالة عدم الحضور (No-Show) إلى زيادة سجل عقوبات اللاعب وتخفيض رتبته آلياً. متابعة؟')) {
+        return;
+      }
+      updateStatus(bookingId, 'No-Show');
+    }
+
+    function setTab(tab) {
+      document.getElementById('tabToday').style.display = tab === 'today' ? 'block' : 'none';
+      document.getElementById('tabTomorrow').style.display = tab === 'tomorrow' ? 'block' : 'none';
+      document.getElementById('tabAdd').style.display = tab === 'add' ? 'block' : 'none';
+
+      document.getElementById('tabBtnToday').classList.toggle('active', tab === 'today');
+      document.getElementById('tabBtnTomorrow').classList.toggle('active', tab === 'tomorrow');
+      document.getElementById('tabBtnAdd').classList.toggle('active', tab === 'add');
+    }
+
+    function toggleFormMode() {
+      const mode = document.getElementById('formActionType').value;
+      document.getElementById('bookingFields').style.display = mode === 'booking' ? 'block' : 'none';
+      document.getElementById('blockFields').style.display = mode === 'block' ? 'block' : 'none';
+    }
+
+    async function refreshAdminSlots() {
+      const pitch = document.getElementById('formPitch').value;
+      const date = document.getElementById('formDate').value;
+      const slotSelect = document.getElementById('formSlot');
+
+      slotSelect.innerHTML = '<option value="">جاري الفحص...</option>';
+
+      try {
+        const res = await api('getAdminSlots', ADMIN_KEY, pitch, date);
+        if (!res || !res.ok) {
+          slotSelect.innerHTML = '<option value="">تعذر تحميل الفترات</option>';
+          return;
+        }
+
+        const slots = res.data.slots;
+        if (slots.length === 0) {
+          slotSelect.innerHTML = '<option value="">لا توجد فترات شاغرة</option>';
+          return;
+        }
+
+        slotSelect.innerHTML = '';
+        slots.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.timeSlot;
+          opt.textContent = `${s.timeSlot} (${s.price} ج.م)`;
+          slotSelect.appendChild(opt);
+        });
+      } catch (e) {
+        slotSelect.innerHTML = '<option value="">خطأ في التحميل</option>';
+      }
+    }
+
+    async function submitAdminForm() {
+      const mode = document.getElementById('formActionType').value;
+      const pitch = document.getElementById('formPitch').value;
+      const date = document.getElementById('formDate').value;
+      const slot = document.getElementById('formSlot').value;
+
+      if (!slot) {
+        toast('يرجى اختيار فترة متاحة.');
+        return;
+      }
+
+      if (mode === 'block') {
+        const reason = document.getElementById('formBlockReason').value.trim();
+        try {
+          const res = await api('adminBlockSlot', ADMIN_KEY, pitch, date, slot, reason);
+          if (!res || !res.ok) {
+            toast(res ? res.message : 'فشل إغلاق الفترة');
+            return;
+          }
+          toast('تم إغلاق الفترة بنجاح.');
+          loadDashboard();
+          refreshAdminSlots();
+          setTab('today');
+        } catch (e) {
+          toast('خطأ: ' + e.message);
+        }
+      } else {
+        const name = document.getElementById('formName').value.trim();
+        const phone = document.getElementById('formPhone').value.trim();
+        const price = document.getElementById('formPrice').value.trim();
+
+        if (!name) {
+          toast('يرجى كتابة اسم الكابتن.');
+          return;
+        }
+
+        try {
+          const res = await api('adminAddBooking', ADMIN_KEY, {
+            pitchId: pitch,
+            date: date,
+            timeSlot: slot,
+            name: name,
+            phone: phone,
+            price: price
+          });
+
+          if (!res || !res.ok) {
+            toast(res ? res.message : 'فشل تسجيل الحجز');
+            return;
+          }
+
+          toast('تم تسجيل الحجز بنجاح.');
+          loadDashboard();
+          refreshAdminSlots();
+          setTab('today');
+        } catch (e) {
+          toast('خطأ: ' + e.message);
+        }
+      }
+    }
+  </script>
+</body>
+</html>

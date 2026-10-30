@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>San Siro ⚽ | حجز ملاعب كرة القدم</title>
+  <!-- Google Fonts: Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #0A1F1A;
+      --bg-surface: #112A22;
+      --bg-card: #16362C;
+      --bg-card-hover: #1C4438;
+      --primary: #0B6E4F;
+      --primary-light: #108A64;
+      --primary-glow: rgba(11, 110, 79, 0.4);
+      --accent-gold: #F2C94C;
+      --accent-gold-glow: rgba(242, 201, 76, 0.3);
+      --danger: #EF4444;
+      --warning: #F59E0B;
+      --text-main: #FFFFFF;
+      --text-muted: #9CA3AF;
+      --text-dim: #6B7280;
+      --border-color: #1F493C;
+      --border-focus: #108A64;
+      --shadow-soft: 0 4px 14px rgba(0, 0, 0, 0.3);
+      --shadow-lift: 0 10px 25px rgba(0, 0, 0, 0.45);
+      --font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding-bottom: 90px;
+      line-height: 1.5;
+      overflow-x: hidden;
+      /* Subtle tactile noise texture */
+      background-image: radial-gradient(rgba(16, 138, 100, 0.08) 1px, transparent 0);
+      background-size: 24px 24px;
+    }
+
+    /* Container */
+    .container {
+      max-width: 580px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 18px 0 14px;
+    }
+
+    .brand-title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .brand-title span.accent {
+      color: var(--accent-gold);
+    }
+
+    .brand-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Pitch Segmented Switcher */
+    .pitch-switcher {
+      display: flex;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 4px;
+      margin: 16px 0;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .pitch-btn {
+      flex: 1;
+      padding: 12px 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font-family);
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .pitch-btn.active {
+      background: var(--primary);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+
+    /* Horizontal Day Strip */
+    .day-strip-wrap {
+      margin: 16px -16px;
+      padding: 0 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .day-strip-wrap::-webkit-scrollbar {
+      display: none;
+    }
+
+    .day-strip {
+      display: flex;
+      gap: 10px;
+      min-width: max-content;
+      padding-bottom: 4px;
+    }
+
+    .day-chip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 10px 14px;
+      min-width: 78px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .day-chip .chip-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .day-chip .chip-num {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .day-chip .chip-month {
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .day-chip.active {
+      background: var(--primary-light);
+      border-color: var(--accent-gold);
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+
+    .day-chip.active .chip-label,
+    .day-chip.active .chip-num,
+    .day-chip.active .chip-month {
+      color: #FFFFFF;
+    }
+
+    /* Section Title */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px 0 12px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .slot-counter-badge {
+      font-size: 12px;
+      background: rgba(11, 110, 79, 0.25);
+      color: #34D399;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    /* Slots Grid */
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    @media (min-width: 600px) {
+      .slots-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .slot-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 14px 12px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .slot-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-focus);
+      transform: translateY(-2px);
+    }
+
+    .slot-card:active {
+      transform: scale(0.98);
+    }
+
+    .slot-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .slot-time {
+      font-size: 14px;
+      font-weight: 700;
+      direction: ltr;
+      text-align: right;
+    }
+
+    .slot-icon {
+      font-size: 16px;
+    }
+
+    .slot-pricing {
+      margin-top: 6px;
+    }
+
+    .slot-price {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--accent-gold);
+    }
+
+    .slot-price-currency {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-right: 2px;
+    }
+
+    .slot-original-price {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-decoration: line-through;
+      margin-right: 6px;
+    }
+
+    .promo-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      color: #000000;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 6px;
+      margin-top: 4px;
+      box-shadow: 0 2px 6px var(--accent-gold-glow);
+    }
+
+    /* Skeleton Loading */
+    .skeleton-slot {
+      background: linear-gradient(90deg, #16362C 25%, #1F493C 50%, #16362C 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      height: 94px;
+      border-radius: 14px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Empty States */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 40px 16px;
+      background: var(--bg-surface);
+      border: 1px dashed var(--border-color);
+      border-radius: 16px;
+    }
+
+    .empty-state .empty-icon {
+      font-size: 44px;
+      margin-bottom: 8px;
+    }
+
+    .empty-state h4 {
+      font-size: 16px;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .empty-state p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Modal / Bottom Sheet */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-sheet {
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-color);
+      border-radius: 24px 24px 0 0;
+      width: 100%;
+      max-width: 540px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 20px 20px 32px;
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
+      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .sheet-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--border-color);
+      border-radius: 4px;
+      margin: 0 auto 16px;
+    }
+
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .sheet-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .sheet-close-btn {
+      background: var(--bg-card);
+      border: none;
+      color: var(--text-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Selected Slot Summary Ribbon */
+    .slot-summary-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .summary-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .summary-pitch {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .summary-time {
+      font-size: 13px;
+      color: var(--text-muted);
+      direction: ltr;
+      text-align: right;
+    }
+
+    .summary-price {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--accent-gold);
+    }
+
+    /* Form Controls */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-family: var(--font-family);
+      font-size: 16px;
+      color: var(--text-main);
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    /* 4-Digit PIN Boxes */
+    .pin-grid {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      direction: ltr;
+      margin: 12px 0 16px;
+    }
+
+    .pin-digit {
+      width: 54px;
+      height: 56px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 800;
+      border-radius: 12px;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .pin-digit:focus {
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 0 3px var(--accent-gold-glow);
+    }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%;
+      background: var(--primary);
+      border: none;
+      color: #FFFFFF;
+      font-family: var(--font-family);
+      font-size: 16px;
+      font-weight: 700;
+      padding: 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px var(--primary-glow);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-light);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.99);
+    }
+
+    .btn-primary:disabled {
+      background: #1F3B32;
+      color: #6B7280;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-whatsapp {
+      background: #25D366;
+      color: #FFFFFF;
+      box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+    }
+
+    .btn-whatsapp:hover {
+      background: #20bd5a;
+    }
+
+    /* Match Ticket Card */
+    .ticket-card {
+      background: #132E27;
+      border: 2px solid var(--primary-light);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+      margin: 16px 0;
+      box-shadow: var(--shadow-lift);
+      text-align: center;
+    }
+
+    .ticket-badge {
+      display: inline-block;
+      background: var(--primary);
+      color: #FFFFFF;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    .ticket-captain {
+      font-size: 20px;
+      font-weight: 800;
+      color: #FFFFFF;
+      margin-bottom: 4px;
+    }
+
+    .ticket-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      background: var(--bg-main);
+      padding: 14px;
+      border-radius: 12px;
+      margin: 16px 0;
+      text-align: right;
+    }
+
+    .ticket-detail-item {
+      font-size: 13px;
+    }
+
+    .ticket-detail-item .lbl {
+      color: var(--text-dim);
+      font-size: 11px;
+    }
+
+    .ticket-detail-item .val {
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .ticket-cash-notice {
+      background: rgba(242, 201, 76, 0.15);
+      border: 1px dashed var(--accent-gold);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-gold);
+      margin-top: 12px;
+    }
+
+    /* Deposit / Payment Card */
+    .deposit-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+
+    .countdown-timer {
+      background: #7F1D1D;
+      border: 1px solid #B91C1C;
+      color: #FCA5A5;
+      font-weight: 700;
+      padding: 8px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 14px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .payment-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-main);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+
+    .copy-btn {
+      background: var(--primary);
+      border: none;
+      color: #FFFFFF;
+      font-family: var(--font-family);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* Bottom App Bar Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-dim);
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s;
+      border: none;
+      background: transparent;
+      font-family: var(--font-family);
+    }
+
+    .nav-tab.active {
+      color: #34D399;
+    }
+
+    .nav-icon {
+      font-size: 20px;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #1F2937;
+      color: #FFFFFF;
+      border: 1px solid #374151;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      z-index: 2000;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 90%;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .toast.toast-error {
+      background: #7F1D1D;
+      border-color: #B91C1C;
+    }
+
+    .toast.toast-success {
+      background: #064E3B;
+      border-color: #059669;
+    }
+
+    /* Cancel Match Cards */
+    .booking-history-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .history-top {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .status-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .status-Confirmed { background: #064E3B; color: #34D399; }
+    .status-Pending { background: #78350F; color: #FCD34D; }
+    .status-Reserved { background: #1E3A8A; color: #93C5FD; }
+
+    .btn-cancel {
+      background: #7F1D1D;
+      color: #FCA5A5;
+      border: 1px solid #B91C1C;
+      font-family: var(--font-family);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .btn-cancel:disabled {
+      background: #2D3748;
+      border-color: #4A5568;
+      color: #A0AEC0;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Main Container -->
+  <div class="container">
+
+    <!-- Header -->
+    <header>
+      <div class="brand-title">
+        <span>⚽</span>
+        <span id="stadiumNameHeader">San Siro</span>
+        <span class="accent">Stadium</span>
+      </div>
+      <div class="brand-subtitle">الحجز الآلي الفوري لملاعب كرة القدم</div>
+    </header>
+
+    <!-- VIEW 1: BOOKING TAB -->
+    <div id="viewBooking">
+      <!-- Pitch Selector Switcher -->
+      <div class="pitch-switcher">
+        <button class="pitch-btn active" id="btnPitch1" onclick="switchPitch('Pitch 1')">
+          <span>🏟️</span> ملعب 1
+        </button>
+        <button class="pitch-btn" id="btnPitch2" onclick="switchPitch('Pitch 2')">
+          <span>🏟️</span> ملعب 2
+        </button>
+      </div>
+
+      <!-- Horizontal Day Strip -->
+      <div class="day-strip-wrap">
+        <div class="day-strip" id="dayStripContainer">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Available Slots Section Header -->
+      <div class="section-header">
+        <div class="section-title">
+          <span>⏰</span> الفترات المتاحة
+        </div>
+        <div class="slot-counter-badge" id="slotCounterBadge">جاري التحميل...</div>
+      </div>
+
+      <!-- Slots Grid -->
+      <div class="slots-grid" id="slotsGrid">
+        <div class="skeleton-slot"></div>
+        <div class="skeleton-slot"></div>
+        <div class="skeleton-slot"></div>
+        <div class="skeleton-slot"></div>
+      </div>
+    </div>
+
+    <!-- VIEW 2: MY BOOKINGS / CANCEL TAB -->
+    <div id="viewMyBookings" style="display: none;">
+      <div class="section-header">
+        <div class="section-title">
+          <span>📋</span> متابعة وإلغاء الحجوزات
+        </div>
+      </div>
+
+      <div class="deposit-card">
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+          أدخل رقم هاتفك المسجل ورمز PIN المكون من 4 أرقام لعرض حجوزاتك القادمة:
+        </p>
+        <div class="form-group">
+          <label class="form-label">رقم الهاتف المحمول (01xxxxxxxxx)</label>
+          <input type="tel" id="myBookingsPhone" class="form-input" placeholder="01012345678" maxlength="11">
+        </div>
+        <div class="form-group">
+          <label class="form-label">رمز الـ PIN (4 أرقام)</label>
+          <input type="password" id="myBookingsPin" class="form-input" placeholder="••••" maxlength="4" style="text-align: center; letter-spacing: 4px;">
+        </div>
+        <button class="btn-primary" onclick="fetchMyBookings()">
+          <span>🔍</span> استعراض حجوزاتي
+        </button>
+      </div>
+
+      <div id="myBookingsList"></div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <button class="nav-tab active" id="tabBooking" onclick="switchTab('booking')">
+      <span class="nav-icon">⚽</span>
+      <span>احجز الآن</span>
+    </button>
+    <button class="nav-tab" id="tabMyBookings" onclick="switchTab('my_bookings')">
+      <span class="nav-icon">📋</span>
+      <span>حجوزاتي</span>
+    </button>
+  </nav>
+
+  <!-- BOOKING BOTTOM SHEET MODAL -->
+  <div class="modal-overlay" id="bookingModal" onclick="handleOverlayClick(event)">
+    <div class="modal-sheet" id="modalSheet">
+      <div class="sheet-handle"></div>
+
+      <div class="sheet-header">
+        <div class="sheet-title" id="modalTitle">تأكيد حجز الفترة</div>
+        <button class="sheet-close-btn" onclick="closeModal()">✕</button>
+      </div>
+
+      <!-- Selected Slot Summary Bar -->
+      <div class="slot-summary-bar">
+        <div class="summary-info">
+          <div class="summary-pitch" id="summaryPitch">ملعب 1</div>
+          <div class="summary-time" id="summaryTime">الجمعة 30 أكتوبر • 08:00 PM - 09:00 PM</div>
+        </div>
+        <div class="summary-price" id="summaryPrice">250 ج.م</div>
+      </div>
+
+      <!-- STEP 1: PHONE INPUT -->
+      <div id="stepPhone">
+        <div class="form-group">
+          <label class="form-label">أدخل رقم هاتفك المحمول (واتساب)</label>
+          <input type="tel" id="inputPhone" class="form-input" placeholder="01xxxxxxxxx" maxlength="11" oninput="onPhoneChange()">
+        </div>
+        <button class="btn-primary" id="btnNextPhone" onclick="submitPhoneStep()">
+          <span>التالي</span> ➔
+        </button>
+      </div>
+
+      <!-- STEP 2A: PIN ENTRY (Existing Trusted / Known Client) -->
+      <div id="stepPin" style="display: none;">
+        <p style="font-size: 14px; color: var(--text-muted); text-align: center; margin-bottom: 8px;">
+          أهلاً بك كابتن <strong id="trustedCaptainName" style="color: #FFFFFF;"></strong> ⚽<br>
+          أدخل رمز الـ PIN الخاص بك لإتمام الحجز فوراً:
+        </p>
+        <div class="pin-grid">
+          <input type="password" maxlength="1" class="pin-digit" id="pinD1" oninput="handlePinInput(1, event)" onkeydown="handlePinBackspace(1, event)">
+          <input type="password" maxlength="1" class="pin-digit" id="pinD2" oninput="handlePinInput(2, event)" onkeydown="handlePinBackspace(2, event)">
+          <input type="password" maxlength="1" class="pin-digit" id="pinD3" oninput="handlePinInput(3, event)" onkeydown="handlePinBackspace(3, event)">
+          <input type="password" maxlength="1" class="pin-digit" id="pinD4" oninput="handlePinInput(4, event)" onkeydown="handlePinBackspace(4, event)">
+        </div>
+        <button class="btn-primary" id="btnSubmitPin" onclick="submitBookingWithPin(false)">
+          <span>تأكيد الحجز الفوري ⚽</span>
+        </button>
+      </div>
+
+      <!-- STEP 2B: SET PIN (Trusted First Visit) -->
+      <div id="stepSetupPin" style="display: none;">
+        <div style="background: rgba(11, 110, 79, 0.2); border: 1px solid var(--primary-light); padding: 12px; border-radius: 10px; margin-bottom: 14px; font-size: 13px;">
+          🌟 أهلاً كابتن <strong id="setupCaptainName"></strong>!<br>
+          حدد رمز PIN شخصي مكون من 4 أرقام لحماية حسابك وتسهيل حجوزاتك القادمة.
+        </div>
+        <div class="form-group">
+          <label class="form-label">اختر رمز PIN جديد (4 أرقام)</label>
+          <input type="password" id="inputSetupPin" class="form-input" maxlength="4" placeholder="••••" style="text-align: center; letter-spacing: 4px;">
+        </div>
+        <div class="form-group">
+          <label class="form-label">تأكيد رمز PIN</label>
+          <input type="password" id="inputSetupPinConfirm" class="form-input" maxlength="4" placeholder="••••" style="text-align: center; letter-spacing: 4px;">
+        </div>
+        <button class="btn-primary" onclick="submitSetupPin()">
+          <span>حفظ الرمز وتأكيد الحجز ⚽</span>
+        </button>
+      </div>
+
+      <!-- STEP 2C: NEW CUSTOMER REGISTRATION -->
+      <div id="stepNewCustomer" style="display: none;">
+        <div style="background: rgba(242, 201, 76, 0.15); border: 1px solid var(--accent-gold); padding: 12px; border-radius: 10px; margin-bottom: 14px; font-size: 13px; color: var(--accent-gold);">
+          📋 أهلاً بك للمرة الأولى في سان سيرو! يتطلب تأكيد الحجز إيداع عربون بسيط (<span id="depositNoticeSpan">50</span> ج.م) لحجز الفترة لمدة 15 دقيقة.
+        </div>
+        <div class="form-group">
+          <label class="form-label">اسم اللاعب / الكابتن (ثنائي على الأقل)</label>
+          <input type="text" id="inputNewName" class="form-input" placeholder="مثال: محمد أحمد">
+        </div>
+        <div class="form-group">
+          <label class="form-label">اختر رمز PIN مكون من 4 أرقام لحسابك</label>
+          <input type="password" id="inputNewPin" class="form-input" maxlength="4" placeholder="••••" style="text-align: center; letter-spacing: 4px;">
+        </div>
+        <button class="btn-primary" onclick="submitNewCustomerBooking()">
+          <span>متابعة ودفع العربون 💳</span>
+        </button>
+      </div>
+
+      <!-- STEP 2D: BLOCKED CUSTOMER -->
+      <div id="stepBlocked" style="display: none; text-align: center; padding: 20px 0;">
+        <div style="font-size: 48px; margin-bottom: 12px;">🚫</div>
+        <h3 style="color: var(--danger); margin-bottom: 8px;">الحجز مقيد لهذا الرقم</h3>
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">
+          نظراً لتجاوز عدد مرات عدم الحضور، لا يمكن إجراء الحجز آلياً. يرجى الاتصال بإدارة الملعب مباشرة.
+        </p>
+        <a id="btnCallOwner" href="#" class="btn-primary" style="text-decoration: none;">
+          <span>📞</span> الاتصال بإدارة الملعب
+        </a>
+      </div>
+
+      <!-- STEP 3A: SUCCESS MATCH TICKET (Trusted Client) -->
+      <div id="stepTicket" style="display: none;">
+        <div class="ticket-card">
+          <div class="ticket-badge">✅ تم تأكيد الحجز بنجاح</div>
+          <div class="ticket-captain" id="ticketPlayer">كابتن أحمد</div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+            رقم الحجز: <strong id="ticketId" style="color: #FFFFFF;">BK-2026-101</strong>
+          </div>
+
+          <div class="ticket-details">
+            <div class="ticket-detail-item">
+              <div class="lbl">الملعب</div>
+              <div class="val" id="ticketPitch">ملعب 1</div>
+            </div>
+            <div class="ticket-detail-item">
+              <div class="lbl">اليوم والتاريخ</div>
+              <div class="val" id="ticketDate">الجمعة 30 أكتوبر</div>
+            </div>
+            <div class="ticket-detail-item">
+              <div class="lbl">التوقيت</div>
+              <div class="val" id="ticketTime">08:00 PM - 09:00 PM</div>
+            </div>
+            <div class="ticket-detail-item">
+              <div class="lbl">إجمالي السعر</div>
+              <div class="val" id="ticketPrice" style="color: var(--accent-gold);">250 ج.م</div>
+            </div>
+          </div>
+
+          <div class="ticket-cash-notice">
+            💵 الدفع نقدياً (كاش) في الملعب بعد انتهاء المباراة.
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="closeModal()">
+          <span>تم الحفظ بنجاح</span> ✓
+        </button>
+      </div>
+
+      <!-- STEP 3B: DEPOSIT PAYMENT INSTRUCTIONS (New Client) -->
+      <div id="stepDeposit" style="display: none;">
+        <div class="countdown-timer">
+          <span>⏳ المتبقي لإرسال العربون:</span>
+          <span id="countdownDisplay">15:00</span>
+        </div>
+
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+          تم قفل الفترة مؤقتاً باسمك. يرجى تحويل العربون (<strong id="depAmountDisplay" style="color: var(--accent-gold);">50</strong> ج.م) والضغط على الزر بالأسفل لإرسال الإشعار وتأكيد الحجز:
+        </p>
+
+        <div class="deposit-card">
+          <div class="payment-row">
+            <div>
+              <div style="font-size: 11px; color: var(--text-dim);">محفظة فودافون كاش:</div>
+              <div style="font-weight: 700; direction: ltr; text-align: right;" id="valVodafone">01012345678</div>
+            </div>
+            <button class="copy-btn" onclick="copyText('valVodafone')">نسخ</button>
+          </div>
+
+          <div class="payment-row">
+            <div>
+              <div style="font-size: 11px; color: var(--text-dim);">معرف إنستاباي InstaPay:</div>
+              <div style="font-weight: 700;" id="valInstaPay">sansiro@instapay</div>
+            </div>
+            <button class="copy-btn" onclick="copyText('valInstaPay')">نسخ</button>
+          </div>
+        </div>
+
+        <a id="btnSendWaReceipt" href="#" target="_blank" class="btn-primary btn-whatsapp" style="text-decoration: none; margin-bottom: 8px;">
+          <span>📲</span> أرسل إيصال التحويل على واتساب
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // State management
+    const state = {
+      initData: null,
+      currentPitch: 'Pitch 1',
+      selectedDate: '',
+      selectedSlot: null,
+      cachedSlots: {},
+      customerState: null,
+      verifiedPhone: '',
+      countdownInterval: null
+    };
+
+    // Google Apps Script API Promise Wrapper with Timeout
+    function api(fnName, ...args) {
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('انتهت مهلة الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت.'));
+        }, 25000);
+
+        if (!google || !google.script || !google.script.run) {
+          clearTimeout(timeout);
+          reject(new Error('بيئة تشغيل Google Apps Script غير متوفرة.'));
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler((response) => {
+            clearTimeout(timeout);
+            resolve(response);
+          })
+          .withFailureHandler((error) => {
+            clearTimeout(timeout);
+            reject(error);
+          })[fnName](...args);
+      });
+    }
+
+    // Toast Notification Utility
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast show ' + (isError ? 'toast-error' : 'toast-success');
+      setTimeout(() => {
+        toast.className = 'toast';
+      }, 3500);
+    }
+
+    // Copy to Clipboard
+    function copyText(elementId) {
+      const text = document.getElementById(elementId).textContent.trim();
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('تم نسخ ' + text + ' إلى الحافظة.');
+      });
+    }
+
+    // App Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      // Remember saved phone number
+      const savedPhone = localStorage.getItem('sansiro_phone');
+      if (savedPhone) {
+        document.getElementById('inputPhone').value = savedPhone;
+        document.getElementById('myBookingsPhone').value = savedPhone;
+      }
+
+      loadBootstrap();
+    });
+
+    async function loadBootstrap() {
+      try {
+        const res = await api('getInitData');
+        if (!res || !res.ok) {
+          showToast(res ? res.message : 'فشل تحميل بيانات البدء', true);
+          return;
+        }
+
+        state.initData = res.data;
+        document.getElementById('stadiumNameHeader').textContent = state.initData.stadiumName;
+        document.getElementById('depositNoticeSpan').textContent = state.initData.depositAmount;
+
+        // Render Day Strip
+        renderDayStrip(state.initData.days);
+
+        // Load Slots for Today
+        if (state.initData.days.length > 0) {
+          selectDate(state.initData.days[0].dateStr);
+        }
+      } catch (err) {
+        showToast('تعذر الاتصال بالخادم: ' + err.message, true);
+      }
+    }
+
+    function renderDayStrip(days) {
+      const container = document.getElementById('dayStripContainer');
+      container.innerHTML = '';
+
+      days.forEach((d, idx) => {
+        const chip = document.createElement('div');
+        chip.className = 'day-chip ' + (idx === 0 ? 'active' : '');
+        chip.id = 'day_chip_' + d.dateStr;
+        chip.onclick = () => selectDate(d.dateStr);
+
+        chip.innerHTML = `
+          <div class="chip-label">${d.labelAr}</div>
+          <div class="chip-num">${d.dayNum}</div>
+          <div class="chip-month">${d.monthNameAr}</div>
+        `;
+        container.appendChild(chip);
+      });
+    }
+
+    function selectDate(dateStr) {
+      state.selectedDate = dateStr;
+
+      // Update active chip style
+      document.querySelectorAll('.day-chip').forEach(c => c.classList.remove('active'));
+      const activeChip = document.getElementById('day_chip_' + dateStr);
+      if (activeChip) activeChip.classList.add('active');
+
+      loadSlots();
+    }
+
+    function switchPitch(pitchId) {
+      state.currentPitch = pitchId;
+      document.getElementById('btnPitch1').classList.toggle('active', pitchId === 'Pitch 1');
+      document.getElementById('btnPitch2').classList.toggle('active', pitchId === 'Pitch 2');
+      loadSlots();
+    }
+
+    async function loadSlots() {
+      const grid = document.getElementById('slotsGrid');
+      const counter = document.getElementById('slotCounterBadge');
+
+      counter.textContent = 'جاري الفحص...';
+      grid.innerHTML = `
+        <div class="skeleton-slot"></div>
+        <div class="skeleton-slot"></div>
+        <div class="skeleton-slot"></div>
+        <div class="skeleton-slot"></div>
+      `;
+
+      try {
+        const res = await api('getAvailableSlots', state.currentPitch, state.selectedDate);
+        if (!res || !res.ok) {
+          grid.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><h4>فشل تحميل المواعيد</h4><p>${res ? res.message : ''}</p></div>`;
+          counter.textContent = '0 متاح';
+          return;
+        }
+
+        const slots = res.data.slots;
+        counter.textContent = `${slots.length} فترة متاحة`;
+
+        if (slots.length === 0) {
+          grid.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">⚽</div>
+              <h4>كافة الفترات محجوزة</h4>
+              <p>لا توجد فترات شاغرة في هذا اليوم. يمكنك اختيار يوم آخر من الشريط بالأعلى.</p>
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = '';
+        slots.forEach(s => {
+          const card = document.createElement('div');
+          card.className = 'slot-card';
+          card.onclick = () => openBookingModal(s);
+
+          const promoBadge = s.isDiscount
+            ? `<div class="promo-badge">🔥 ${s.eventTitle || 'عرض خاص'}</div>`
+            : '';
+
+          const strikePrice = s.isDiscount
+            ? `<span class="slot-original-price">${s.originalPrice} ج.م</span>`
+            : '';
+
+          card.innerHTML = `
+            <div class="slot-top">
+              <div class="slot-time">${s.timeSlot}</div>
+              <div class="slot-icon">${s.isNight ? '🌙' : '☀️'}</div>
+            </div>
+            <div class="slot-pricing">
+              ${strikePrice}
+              <span class="slot-price">${s.price}</span>
+              <span class="slot-price-currency">ج.م</span>
+            </div>
+            ${promoBadge}
+          `;
+          grid.appendChild(card);
+        });
+      } catch (err) {
+        grid.innerHTML = `<div class="empty-state"><div class="empty-icon">❌</div><h4>خطأ في الاتصال</h4><p>${err.message}</p></div>`;
+        counter.textContent = 'خطأ';
+      }
+    }
+
+    // Bottom Navigation Switcher
+    function switchTab(tab) {
+      const isBooking = tab === 'booking';
+      document.getElementById('viewBooking').style.display = isBooking ? 'block' : 'none';
+      document.getElementById('viewMyBookings').style.display = isBooking ? 'none' : 'block';
+
+      document.getElementById('tabBooking').classList.toggle('active', isBooking);
+      document.getElementById('tabMyBookings').classList.toggle('active', !isBooking);
+    }
+
+    // MODAL INTERACTION & BOOKING STEP MACHINE
+    function openBookingModal(slot) {
+      state.selectedSlot = slot;
+
+      // Fill summary bar
+      document.getElementById('summaryPitch').textContent = state.currentPitch;
+      document.getElementById('summaryTime').textContent = `${state.selectedDate} • ${slot.timeSlot}`;
+      document.getElementById('summaryPrice').textContent = `${slot.price} ج.م`;
+
+      // Reset modal views
+      resetModalSteps();
+      document.getElementById('stepPhone').style.display = 'block';
+
+      // Open sheet
+      document.getElementById('bookingModal').classList.add('open');
+
+      // Autofocus phone if empty
+      const phoneInput = document.getElementById('inputPhone');
+      if (phoneInput.value.length === 11) {
+        submitPhoneStep();
+      } else {
+        phoneInput.focus();
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('bookingModal').classList.remove('open');
+      clearInterval(state.countdownInterval);
+      resetModalSteps();
+    }
+
+    function handleOverlayClick(e) {
+      if (e.target.id === 'bookingModal') {
+        closeModal();
+      }
+    }
+
+    function resetModalSteps() {
+      document.getElementById('stepPhone').style.display = 'none';
+      document.getElementById('stepPin').style.display = 'none';
+      document.getElementById('stepSetupPin').style.display = 'none';
+      document.getElementById('stepNewCustomer').style.display = 'none';
+      document.getElementById('stepBlocked').style.display = 'none';
+      document.getElementById('stepTicket').style.display = 'none';
+      document.getElementById('stepDeposit').style.display = 'none';
+
+      // Clear PIN fields
+      ['pinD1', 'pinD2', 'pinD3', 'pinD4'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+    }
+
+    function onPhoneChange() {
+      const val = document.getElementById('inputPhone').value;
+      if (val.length === 11) {
+        submitPhoneStep();
+      }
+    }
+
+    async function submitPhoneStep() {
+      const phone = document.getElementById('inputPhone').value.trim();
+      if (phone.length !== 11 || !phone.startsWith('01')) {
+        showToast('يرجى إدخال رقم هاتف محمول مصري صحيح (11 رقم).', true);
+        return;
+      }
+
+      state.verifiedPhone = phone;
+      localStorage.setItem('sansiro_phone', phone);
+
+      const btn = document.getElementById('btnNextPhone');
+      btn.disabled = true;
+      btn.textContent = 'جاري التحقق...';
+
+      try {
+        const res = await api('lookupCustomer', phone);
+        btn.disabled = false;
+        btn.innerHTML = '<span>التالي</span> ➔';
+
+        if (!res || !res.ok) {
+          showToast(res ? res.message : 'فشل التحقق من العميل', true);
+          return;
+        }
+
+        state.customerState = res.data;
+        resetModalSteps();
+
+        switch (res.data.state) {
+          case 'BLOCKED':
+            document.getElementById('stepBlocked').style.display = 'block';
+            document.getElementById('btnCallOwner').href = 'tel:' + (state.initData.ownerWhatsAppNumber || '');
+            break;
+
+          case 'TRUSTED_PIN':
+          case 'NEW_KNOWN':
+            document.getElementById('stepPin').style.display = 'block';
+            document.getElementById('trustedCaptainName').textContent = res.data.name || '';
+            document.getElementById('pinD1').focus();
+            break;
+
+          case 'TRUSTED_SETUP':
+            document.getElementById('stepSetupPin').style.display = 'block';
+            document.getElementById('setupCaptainName').textContent = res.data.name || '';
+            document.getElementById('inputSetupPin').focus();
+            break;
+
+          case 'NEW_UNKNOWN':
+          default:
+            document.getElementById('stepNewCustomer').style.display = 'block';
+            document.getElementById('inputNewName').focus();
+            break;
+        }
+      } catch (e) {
+        btn.disabled = false;
+        btn.innerHTML = '<span>التالي</span> ➔';
+        showToast('حدث خطأ: ' + e.message, true);
+      }
+    }
+
+    // 4-Digit PIN Auto-Advance & Backspace Helpers
+    function handlePinInput(idx, e) {
+      const val = e.target.value;
+      if (val.length >= 1) {
+        e.target.value = val.slice(-1);
+        if (idx < 4) {
+          document.getElementById('pinD' + (idx + 1)).focus();
+        } else {
+          // All 4 entered -> automatically trigger submit
+          submitBookingWithPin(false);
+        }
+      }
+    }
+
+    function handlePinBackspace(idx, e) {
+      if (e.key === 'Backspace' && !e.target.value && idx > 1) {
+        document.getElementById('pinD' + (idx - 1)).focus();
+      }
+    }
+
+    function getEnteredPin() {
+      return (
+        document.getElementById('pinD1').value +
+        document.getElementById('pinD2').value +
+        document.getElementById('pinD3').value +
+        document.getElementById('pinD4').value
+      );
+    }
+
+    // SUBMIT ACTIONS
+    async function submitBookingWithPin(isSettingPin) {
+      const pin = getEnteredPin();
+      if (pin.length !== 4) {
+        showToast('يرجى إدخال رمز الـ PIN المكون من 4 أرقام كاملاً.', true);
+        return;
+      }
+
+      executeBookingTransaction({
+        pitchId: state.currentPitch,
+        date: state.selectedDate,
+        timeSlot: state.selectedSlot.timeSlot,
+        phone: state.verifiedPhone,
+        name: state.customerState ? state.customerState.name : '',
+        pin: pin,
+        isSettingPin: isSettingPin
+      });
+    }
+
+    async function submitSetupPin() {
+      const pin = document.getElementById('inputSetupPin').value.trim();
+      const pinConfirm = document.getElementById('inputSetupPinConfirm').value.trim();
+
+      if (pin.length !== 4 || pin !== pinConfirm) {
+        showToast('رمز PIN غير متطابق أو لا يتكون من 4 أرقام.', true);
+        return;
+      }
+
+      executeBookingTransaction({
+        pitchId: state.currentPitch,
+        date: state.selectedDate,
+        timeSlot: state.selectedSlot.timeSlot,
+        phone: state.verifiedPhone,
+        name: state.customerState ? state.customerState.name : '',
+        pin: pin,
+        isSettingPin: true
+      });
+    }
+
+    async function submitNewCustomerBooking() {
+      const name = document.getElementById('inputNewName').value.trim();
+      const pin = document.getElementById('inputNewPin').value.trim();
+
+      if (name.length < 2) {
+        showToast('يرجى إدخال اسم اللاعب.', true);
+        return;
+      }
+      if (pin.length !== 4) {
+        showToast('رمز PIN يجب أن يتكون من 4 أرقام.', true);
+        return;
+      }
+
+      executeBookingTransaction({
+        pitchId: state.currentPitch,
+        date: state.selectedDate,
+        timeSlot: state.selectedSlot.timeSlot,
+        phone: state.verifiedPhone,
+        name: name,
+        pin: pin,
+        isSettingPin: true
+      });
+    }
+
+    async function executeBookingTransaction(payload) {
+      const btn = document.getElementById('btnSubmitPin');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'جاري تأكيد الحجز...';
+      }
+
+      try {
+        const res = await api('verifyAndBook', payload);
+        if (!res || !res.ok) {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'تأكيد الحجز الفوري ⚽';
+          }
+          showToast(res ? res.message : 'فشلت عملية الحجز', true);
+          return;
+        }
+
+        resetModalSteps();
+
+        // Branch by response flow
+        if (res.data.flow === 'CONFIRMED') {
+          // Trusted player instant ticket
+          const t = res.data.ticket;
+          document.getElementById('ticketPlayer').textContent = 'كابتن ' + t.playerName;
+          document.getElementById('ticketId').textContent = t.bookingId;
+          document.getElementById('ticketPitch').textContent = t.pitchId;
+          document.getElementById('ticketDate').textContent = `${t.dayName} ${t.dateStr}`;
+          document.getElementById('ticketTime').textContent = t.timeSlot;
+          document.getElementById('ticketPrice').textContent = `${t.price} ج.م`;
+
+          document.getElementById('stepTicket').style.display = 'block';
+          showToast('مبروك يا كابتن! تم تأكيد حجزك بنجاح ⚽');
+        } else if (res.data.flow === 'PENDING') {
+          // New player deposit required
+          const p = res.data.pending;
+          document.getElementById('depAmountDisplay').textContent = p.depositAmount;
+          document.getElementById('valVodafone').textContent = p.vodafoneCashNumber || '-';
+          document.getElementById('valInstaPay').textContent = p.instaPayHandle || '-';
+          document.getElementById('btnSendWaReceipt').href = p.whatsappReceiptUrl;
+
+          // Start 15-minute countdown timer
+          startCountdown(p.expiresAt);
+          document.getElementById('stepDeposit').style.display = 'block';
+          showToast('تم حجز الفترة مؤقتاً بانتظار تحويل العربون.');
+        }
+
+        // Refresh slots in background
+        loadSlots();
+      } catch (err) {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'تأكيد الحجز الفوري ⚽';
+        }
+        showToast('حدث خطأ: ' + err.message, true);
+      }
+    }
+
+    // Countdown Timer for Lock Expiration
+    function startCountdown(expiresAtIso) {
+      clearInterval(state.countdownInterval);
+      const targetTime = new Date(expiresAtIso).getTime();
+
+      function update() {
+        const remainingMs = targetTime - new Date().getTime();
+        if (remainingMs <= 0) {
+          clearInterval(state.countdownInterval);
+          document.getElementById('countdownDisplay').textContent = 'انتهت صلاحية الحجز!';
+          showToast('انتهت مهلة تحويل العربون (15 دقيقة). تم تحرير الفترة.', true);
+          return;
+        }
+
+        const mins = Math.floor(remainingMs / 60000);
+        const secs = Math.floor((remainingMs % 60000) / 1000);
+        document.getElementById('countdownDisplay').textContent =
+          `${mins < 10 ? '0' + mins : mins}:${secs < 10 ? '0' + secs : secs}`;
+      }
+
+      update();
+      state.countdownInterval = setInterval(update, 1000);
+    }
+
+    // MY BOOKINGS & CANCELLATIONS
+    async function fetchMyBookings() {
+      const phone = document.getElementById('myBookingsPhone').value.trim();
+      const pin = document.getElementById('myBookingsPin').value.trim();
+
+      if (phone.length !== 11 || pin.length !== 4) {
+        showToast('يرجى إدخال رقم الهاتف ورمز PIN بشكل صحيح.', true);
+        return;
+      }
+
+      const listContainer = document.getElementById('myBookingsList');
+      listContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 20px;">جاري البحث...</p>';
+
+      try {
+        const res = await api('getMyBookings', phone, pin);
+        if (!res || !res.ok) {
+          listContainer.innerHTML = `<p style="text-align: center; color: var(--danger); padding: 20px;">${res ? res.message : 'فشل الاسترجاع'}</p>`;
+          return;
+        }
+
+        const bookings = res.data.bookings;
+        if (bookings.length === 0) {
+          listContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 20px;">لا توجد لديك حجوزات قادمة نشطة.</p>';
+          return;
+        }
+
+        listContainer.innerHTML = '';
+        bookings.forEach(b => {
+          const card = document.createElement('div');
+          card.className = 'booking-history-card';
+
+          const cancelBtn = b.canCancel
+            ? `<button class="btn-cancel" onclick="triggerCancelBooking('${phone}', '${pin}', '${b.bookingId}')">إلغاء هذا الحجز ❌</button>`
+            : `<button class="btn-cancel" disabled>مغلق للإلغاء اليوم</button><div style="font-size: 11px; color: var(--danger); margin-top: 4px;">${b.cancelNotice}</div>`;
+
+          card.innerHTML = `
+            <div class="history-top">
+              <strong style="color: #FFFFFF;">${b.pitchId}</strong>
+              <span class="status-badge status-${b.status.replace(/\s+/g, '')}">${b.status}</span>
+            </div>
+            <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">
+              ${b.dayName} ${b.dateStr} • <span style="direction: ltr; display: inline-block;">${b.timeSlot}</span>
+            </div>
+            <div style="font-size: 14px; font-weight: 700; color: var(--accent-gold);">
+              السعر: ${b.price} ج.م | المتبقي كاش: ${b.remainingCash} ج.م
+            </div>
+            ${cancelBtn}
+          `;
+          listContainer.appendChild(card);
+        });
+      } catch (err) {
+        listContainer.innerHTML = `<p style="text-align: center; color: var(--danger); padding: 20px;">${err.message}</p>`;
+      }
+    }
+
+    async function triggerCancelBooking(phone, pin, bookingId) {
+      if (!confirm('هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟ سيتم إتاحة الفترة فوراً لبقية اللاعبين.')) {
+        return;
+      }
+
+      try {
+        const res = await api('cancelBooking', phone, pin, bookingId);
+        if (!res || !res.ok) {
+          showToast(res ? res.message : 'فشل الإلغاء', true);
+          return;
+        }
+
+        showToast(res.data.message || 'تم إلغاء الحجز بنجاح.');
+        fetchMyBookings();
+        loadSlots();
+      } catch (err) {
+        showToast('خطأ: ' + err.message, true);
+      }
+    }
+  </script>
+</body>
+</html>

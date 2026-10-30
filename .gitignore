@@ -1,0 +1,9 @@
+# Google Clasp Auth tokens
+.clasprc.json
+
+# Dependencies
+node_modules/
+
+# OS artifacts
+Thumbs.db
+.DS_Store
