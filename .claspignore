@@ -1,0 +1,7 @@
+# Ignore everything by default
+**/**
+
+# Whitelist Google Apps Script files
+!appsscript.json
+!*.gs
+!*.html

@@ -1,0 +1,49 @@
+name: Auto Deploy to Google Apps Script
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: 🚀 Push & Deploy to Google Apps Script
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📦 Install @google/clasp
+        run: npm install -g @google/clasp
+
+      - name: 🔑 Configure Clasp Credentials
+        run: |
+          mkdir -p ~/.clasprc.json
+          echo "${{ secrets.CLASPRC_JSON }}" > ~/.clasprc.json
+          chmod 600 ~/.clasprc.json
+
+      - name: 📝 Set Custom Script ID (if secret is configured)
+        if: "${{ env.CUSTOM_SCRIPT_ID != '' }}"
+        env:
+          CUSTOM_SCRIPT_ID: ${{ secrets.SCRIPT_ID }}
+        run: |
+          echo "{\"scriptId\":\"${CUSTOM_SCRIPT_ID}\",\"rootDir\":\".\"}" > .clasp.json
+
+      - name: 🚀 Push code to Google Apps Script
+        run: clasp push --force
+
+      - name: 🌐 Deploy / Update Web App
+        run: |
+          if [ -n "${{ secrets.DEPLOYMENT_ID }}" ]; then
+            echo "Updating existing deployment: ${{ secrets.DEPLOYMENT_ID }}..."
+            clasp deploy -i "${{ secrets.DEPLOYMENT_ID }}" -d "Auto-deploy via GitHub Actions (Commit: ${{ github.sha }})" || clasp deploy -d "Auto-deploy via GitHub Actions (Commit: ${{ github.sha }})"
+          else
+            echo "Creating a new deployment..."
+            clasp deploy -d "Auto-deploy via GitHub Actions (Commit: ${{ github.sha }})"
+          fi
