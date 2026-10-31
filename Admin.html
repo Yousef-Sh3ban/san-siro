@@ -35,12 +35,23 @@
 
     body {
       font-family: var(--font-family);
-      background-color: var(--bg-main);
+      background-color: #061811;
       color: var(--text-main);
       padding: 16px;
       padding-bottom: 60px;
       min-height: 100vh;
       line-height: 1.5;
+      background-image: 
+        radial-gradient(ellipse 95% 55% at 50% -5%, rgba(16, 185, 129, 0.3) 0%, rgba(11, 110, 79, 0.12) 55%, transparent 80%),
+        radial-gradient(ellipse at center, transparent 35%, rgba(3, 10, 7, 0.92) 100%),
+        repeating-linear-gradient(
+          to bottom,
+          #081c14 0px,
+          #081c14 44px,
+          #0c271d 44px,
+          #0c271d 88px
+        );
+      background-attachment: fixed;
     }
 
     .container {

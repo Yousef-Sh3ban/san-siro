@@ -11,7 +11,7 @@
   <meta property="og:description" content="منظومة حجز الملاعب الرسمية لنادي سان سيرو. مواعيد متاحة وأسعار واضحة وتأكيد فوري.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="/images/sansiro_logo.png">
-  <meta name="theme-color" content="#0A1F1A">
+  <meta name="theme-color" content="#061811">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" type="image/png" href="/images/sansiro_logo.png">
@@ -34,7 +34,7 @@
       height: 100%;
       height: 100dvh;
       overflow: hidden;
-      background-color: #0A1F1A;
+      background-color: #061811;
       font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
@@ -54,10 +54,10 @@
       height: 100%;
       border: none;
       display: block;
-      background-color: #0A1F1A;
+      background-color: #061811;
     }
 
-    /* Branded Splash Loader */
+    /* Branded Stadium Turf Splash Loader */
     #loader {
       position: absolute;
       top: 0;
@@ -66,7 +66,16 @@
       bottom: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle at center, #112A22 0%, #0A1F1A 100%);
+      background-image: 
+        radial-gradient(ellipse 95% 55% at 50% -5%, rgba(16, 185, 129, 0.35) 0%, rgba(11, 110, 79, 0.15) 55%, transparent 80%),
+        radial-gradient(ellipse at center, transparent 35%, rgba(3, 10, 7, 0.92) 100%),
+        repeating-linear-gradient(
+          to bottom,
+          #081c14 0px,
+          #081c14 44px,
+          #0c271d 44px,
+          #0c271d 88px
+        );
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -79,38 +88,47 @@
     }
 
     .loader-logo {
-      width: 80px;
-      height: 80px;
+      width: 86px;
+      height: 86px;
       margin-bottom: 16px;
       border-radius: 20px;
       object-fit: contain;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.4);
+      border: 1.5px solid rgba(245, 158, 11, 0.4);
+      background: rgba(10, 31, 24, 0.7);
+      padding: 4px;
       animation: bounce 1.4s infinite ease-in-out;
     }
 
     .loader-title {
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 800;
       color: #FFFFFF;
       letter-spacing: -0.5px;
       margin-bottom: 6px;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
     }
 
     .loader-subtitle {
       font-size: 14px;
-      color: #9CA3AF;
+      color: #94A3B8;
       margin-bottom: 24px;
-      font-weight: 500;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      padding: 4px 16px;
+      border-radius: 20px;
     }
 
     .spinner {
-      width: 40px;
-      height: 40px;
+      width: 42px;
+      height: 42px;
       border: 3.5px solid rgba(255, 255, 255, 0.1);
-      border-top-color: #108A64;
-      border-right-color: #F2C94C;
+      border-top-color: #10B981;
+      border-right-color: #F59E0B;
       border-radius: 50%;
       animation: spin 0.9s linear infinite;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
     }
 
     @keyframes spin {
@@ -128,7 +146,7 @@
     <div id="loader">
       <img src="/images/sansiro_logo.png" alt="San Siro Logo" class="loader-logo" onerror="this.outerHTML='<div class=\'loader-logo\' style=\'font-size:48px;display:flex;align-items:center;justify-content:center;\'>⚽</div>'">
       <div class="loader-title">سان سيرو | SAN SIRO</div>
-      <div class="loader-subtitle">جاري تجهيز منظومة الحجز...</div>
+      <div class="loader-subtitle">جاري تجهيز ملعب الحجز... ⚽</div>
       <div class="spinner"></div>
     </div>
 
