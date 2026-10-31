@@ -1,9 +1,14 @@
 # Google Clasp Auth tokens
 .clasprc.json
 
+# Vercel cache & project linking
+.vercel/
+
 # Dependencies
 node_modules/
 
 # OS artifacts
 Thumbs.db
 .DS_Store
+
+.vercel

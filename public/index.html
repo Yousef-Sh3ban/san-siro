@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>سان سيرو ⚽ | حجز ملاعب كرة القدم</title>
+  
+  <!-- SEO & Social Sharing -->
+  <meta name="description" content="منظومة حجز ملاعب كرة القدم - نادي سان سيرو. احجز موعدك بسهولة وسرعة بنظام 12 ساعة مع تأكيد فوري عبر واتساب.">
+  <meta property="og:title" content="سان سيرو ⚽ | حجز ملاعب كرة القدم">
+  <meta property="og:description" content="منظومة حجز الملاعب الرسمية لنادي سان سيرو. مواعيد متاحة وأسعار واضحة وتأكيد فوري.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="/images/sansiro_logo.png">
+  <meta name="theme-color" content="#0A1F1A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" type="image/png" href="/images/sansiro_logo.png">
+
+  <!-- Google Font: Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      background-color: #0A1F1A;
+      font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Fullscreen Wrapper */
+    .app-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #app-frame {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+      background-color: #0A1F1A;
+    }
+
+    /* Branded Splash Loader */
+    #loader {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #112A22 0%, #0A1F1A 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.4s ease-out;
+      color: #FFFFFF;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .loader-logo {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 16px;
+      border-radius: 20px;
+      object-fit: contain;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+
+    .loader-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .loader-subtitle {
+      font-size: 14px;
+      color: #9CA3AF;
+      margin-bottom: 24px;
+      font-weight: 500;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3.5px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #108A64;
+      border-right-color: #F2C94C;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div id="loader">
+      <img src="/images/sansiro_logo.png" alt="San Siro Logo" class="loader-logo" onerror="this.outerHTML='<div class=\'loader-logo\' style=\'font-size:48px;display:flex;align-items:center;justify-content:center;\'>⚽</div>'">
+      <div class="loader-title">سان سيرو | SAN SIRO</div>
+      <div class="loader-subtitle">جاري تجهيز منظومة الحجز...</div>
+      <div class="spinner"></div>
+    </div>
+
+    <iframe 
+      id="app-frame" 
+      title="منظومة حجز ملاعب سان سيرو"
+      allow="clipboard-write; camera; microphone; geolocation"
+      loading="eager">
+    </iframe>
+  </div>
+
+  <script>
+    (function() {
+      const BASE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjdUrhV6PQIgWEJjGT28ZgfOknPC3iW6nHU1e5HFWxxwmlz9WuHwavW0OCf9bRzGg9/exec";
+      const frame = document.getElementById('app-frame');
+      const loader = document.getElementById('loader');
+
+      // Forward any query params (e.g., ?page=admin)
+      const currentQuery = window.location.search || '';
+      frame.src = BASE_APPS_SCRIPT_URL + currentQuery;
+
+      let isHidden = false;
+      function hideLoader() {
+        if (isHidden) return;
+        isHidden = true;
+        loader.style.opacity = '0';
+        setTimeout(function() {
+          loader.style.display = 'none';
+        }, 400);
+      }
+
+      frame.onload = hideLoader;
+      setTimeout(hideLoader, 3500);
+    })();
+  </script>
+</body>
+</html>

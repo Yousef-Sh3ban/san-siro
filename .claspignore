@@ -4,4 +4,10 @@
 # Whitelist Google Apps Script files
 !appsscript.json
 !*.gs
-!*.html
+!Index.html
+!Admin.html
+
+# Ignore Vercel and web wrapper
+public/**
+vercel.json
+.vercel/**
