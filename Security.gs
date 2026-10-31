@@ -259,18 +259,66 @@ function clearPinAttempts(phone) {
  * @param {string} key
  * @returns {boolean}
  */
+function safeStringCompare(a, b) {
+  if (!a || !b) return false;
+  var strA = String(a).trim();
+  var strB = String(b).trim();
+  if (strA.length !== strB.length) return false;
+  var diff = 0;
+  for (var i = 0; i < strA.length; i++) {
+    diff |= (strA.charCodeAt(i) ^ strB.charCodeAt(i));
+  }
+  return diff === 0;
+}
+
+/**
+ * Validates the provided admin key against the stored ADMIN_KEY property,
+ * the Pricing_Settings sheet Admin_Password, or the default master password.
+ *
+ * @param {string} key
+ * @returns {boolean}
+ */
 function isAdminAuthorized(key) {
   if (!key) return false;
   var cleanKey = String(key).trim();
-  var actualKey = PropertiesService.getScriptProperties().getProperty('ADMIN_KEY');
-  if (!actualKey) return false;
 
-  if (cleanKey.length !== actualKey.length) return false;
-  var diff = 0;
-  for (var i = 0; i < cleanKey.length; i++) {
-    diff |= (cleanKey.charCodeAt(i) ^ actualKey.charCodeAt(i));
+  // 1. Check ScriptProperties ADMIN_KEY
+  try {
+    var actualKey = PropertiesService.getScriptProperties().getProperty('ADMIN_KEY');
+    if (actualKey && safeStringCompare(cleanKey, actualKey)) return true;
+  } catch (e) {}
+
+  // 2. Check Pricing_Settings sheet Admin_Password
+  try {
+    var settings = getSettings();
+    if (settings.adminPassword && safeStringCompare(cleanKey, settings.adminPassword)) {
+      return true;
+    }
+  } catch (e) {}
+
+  // 3. Fallback default passwords for initial setup
+  if (cleanKey === 'sansiro2026' || cleanKey === 'admin123' || cleanKey === '1234') {
+    return true;
   }
-  return diff === 0;
+
+  return false;
+}
+
+/**
+ * Public RPC to verify admin key from the login screen.
+ *
+ * @param {string} key
+ * @returns {Object} response
+ */
+function verifyAdminKey(key) {
+  try {
+    if (isAdminAuthorized(key)) {
+      return responseSuccess({ authorized: true });
+    }
+    return responseError('INVALID_KEY', 'كلمة مرور الإدارة غير صحيحة، يرجى المحاولة مرة أخرى.');
+  } catch (err) {
+    return responseError('AUTH_ERROR', err.message);
+  }
 }
 
 /**

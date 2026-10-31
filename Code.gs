@@ -22,19 +22,17 @@ function doGet(e) {
   var params = (e && e.parameter) ? e.parameter : {};
   var page = String(params.page || '').toLowerCase().trim();
 
-  // Admin Route: requires valid key
+  // Admin Route
   if (page === 'admin') {
-    var providedKey = params.key;
-    if (isAdminAuthorized(providedKey)) {
-      var adminTemplate = HtmlService.createTemplateFromFile('Admin');
-      adminTemplate.adminKey = providedKey;
-      return adminTemplate.evaluate()
-        .setTitle('لوحة تحكم الإدارة ⚽ | San Siro')
-        .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no')
-        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-    } else {
-      return renderUnauthorizedPage();
-    }
+    var providedKey = params.key || '';
+    var isAuth = isAdminAuthorized(providedKey);
+    var adminTemplate = HtmlService.createTemplateFromFile('Admin');
+    adminTemplate.adminKey = isAuth ? providedKey : '';
+    adminTemplate.isAuthorized = isAuth;
+    return adminTemplate.evaluate()
+      .setTitle('لوحة تحكم الإدارة ⚽ | San Siro')
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
 
   // Default Route: Player Booking UI

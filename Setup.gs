@@ -285,6 +285,7 @@ function setupPricingSettingsSheet(ss) {
   // Default configuration definitions
   var defaultSettings = [
     ['Stadium_Name', 'San Siro', 'اسم المجمع الرياضي الذي يظهر للاعبين'],
+    ['Admin_Password', 'sansiro2026', 'كلمة مرور الدخول للوحة تحكم الإدارة على الموقع (يمكنك تغييرها في أي وقت)'],
     ['Pitch_1_Day_Rate', 200, 'سعر الساعة لملعب 1 نهاراً (جنيه)'],
     ['Pitch_1_Night_Rate', 250, 'سعر الساعة لملعب 1 ليلاً بعد ساعة البدء المسائية (جنيه)'],
     ['Pitch_2_Day_Rate', 180, 'سعر الساعة لملعب 2 نهاراً (جنيه)'],

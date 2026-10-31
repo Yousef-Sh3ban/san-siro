@@ -189,6 +189,7 @@ function getSettings(forceRefresh) {
 
   var settings = {
     stadiumName: String(rawMap['Stadium_Name'] || 'San Siro').trim(),
+    adminPassword: String(rawMap['Admin_Password'] || rawMap['Admin_PIN'] || 'sansiro2026').trim(),
     pitch1DayRate: Number(rawMap['Pitch_1_Day_Rate']) || 200,
     pitch1NightRate: Number(rawMap['Pitch_1_Night_Rate']) || 250,
     pitch2DayRate: Number(rawMap['Pitch_2_Day_Rate']) || 180,
