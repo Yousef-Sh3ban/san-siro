@@ -5,16 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>سان سيرو ⚽ | حجز ملاعب كرة القدم</title>
   
+  <!-- PWA Web App Manifest & Mobile Meta -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#061811">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="San Siro">
+  <link rel="apple-touch-icon" href="/images/sansiro_logo.png">
+  <link rel="icon" type="image/png" href="/images/sansiro_logo.png">
+
   <!-- SEO & Social Sharing -->
   <meta name="description" content="منظومة حجز ملاعب كرة القدم - نادي سان سيرو. احجز موعدك بسهولة وسرعة بنظام 12 ساعة مع تأكيد فوري عبر واتساب.">
   <meta property="og:title" content="سان سيرو ⚽ | حجز ملاعب كرة القدم">
   <meta property="og:description" content="منظومة حجز الملاعب الرسمية لنادي سان سيرو. مواعيد متاحة وأسعار واضحة وتأكيد فوري.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="/images/sansiro_logo.png">
-  <meta name="theme-color" content="#061811">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="icon" type="image/png" href="/images/sansiro_logo.png">
 
   <!-- Google Font: Cairo -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -139,11 +145,236 @@
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-10px); }
     }
+
+    /* PWA Floating Install Banner */
+    .pwa-banner {
+      position: fixed;
+      bottom: 16px;
+      left: 16px;
+      right: 16px;
+      max-width: 460px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, rgba(16, 44, 34, 0.96) 0%, rgba(9, 28, 21, 0.98) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 20px;
+      padding: 14px 16px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(16, 185, 129, 0.25);
+      backdrop-filter: blur(16px);
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .pwa-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pwa-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      border: 1.5px solid rgba(245, 158, 11, 0.5);
+      background: #081C14;
+      padding: 2px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    .pwa-text {
+      flex: 1;
+      text-align: right;
+    }
+
+    .pwa-text h4 {
+      font-size: 15px;
+      font-weight: 800;
+      color: #FFFFFF;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pwa-text p {
+      font-size: 12px;
+      color: #94A3B8;
+      line-height: 1.4;
+    }
+
+    .pwa-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .pwa-btn-primary {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #10B981 0%, #0B6E4F 100%);
+      color: #FFFFFF;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+      transition: transform 0.15s, box-shadow 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .pwa-btn-primary:active {
+      transform: scale(0.97);
+    }
+
+    .pwa-btn-secondary {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.06);
+      color: #CBD5E1;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .pwa-btn-secondary:active {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    /* iOS Safari Instructions Modal */
+    .ios-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .ios-modal-card {
+      position: relative;
+      background: linear-gradient(145deg, #0e291f 0%, #071912 100%);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 24px;
+      padding: 26px 20px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+      color: #FFFFFF;
+    }
+
+    .ios-modal-close {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      color: #94A3B8;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ios-modal-logo {
+      width: 68px;
+      height: 68px;
+      border-radius: 18px;
+      margin-bottom: 12px;
+      border: 2px solid rgba(245, 158, 11, 0.5);
+      padding: 3px;
+      background: #081C14;
+    }
+
+    .ios-modal-card h3 {
+      font-size: 19px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .ios-modal-card p {
+      font-size: 13px;
+      color: #94A3B8;
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .ios-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: right;
+      background: rgba(16, 185, 129, 0.06);
+      border: 1px solid rgba(16, 185, 129, 0.15);
+      border-radius: 14px;
+      padding: 12px 14px;
+    }
+
+    .ios-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #E2E8F0;
+    }
+
+    .ios-step-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #10B981;
+      color: #061811;
+      font-weight: 800;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .ios-step-text strong {
+      color: #F59E0B;
+    }
   </style>
 </head>
 <body>
   <div class="app-container">
-    <div id="loader">
+    <div id=\"loader\">
       <img src="/images/sansiro_logo.png" alt="San Siro Logo" class="loader-logo" onerror="this.outerHTML='<div class=\'loader-logo\' style=\'font-size:48px;display:flex;align-items:center;justify-content:center;\'>⚽</div>'">
       <div class="loader-title">سان سيرو | SAN SIRO</div>
       <div class="loader-subtitle">جاري تجهيز ملعب الحجز... ⚽</div>
@@ -156,15 +387,64 @@
       allow="clipboard-write; camera; microphone; geolocation"
       loading="eager">
     </iframe>
+
+    <!-- PWA Install Prompt Banner -->
+    <div id="pwaInstallBanner" class="pwa-banner" style="display: none;">
+      <div class="pwa-content">
+        <img src="/images/sansiro_logo.png" alt="San Siro" class="pwa-icon">
+        <div class="pwa-text">
+          <h4 id="pwaTitle">تثبيت تطبيق سان سيرو 📲</h4>
+          <p id="pwaDesc">أضف التطبيق لشاشة هاتفك لحجز الملاعب والوصول السريع بدون متصفح!</p>
+        </div>
+      </div>
+      <div class="pwa-actions">
+        <button id="pwaInstallBtn" class="pwa-btn-primary" onclick="handlePwaInstallClick()">📲 تثبيت التطبيق</button>
+        <button id="pwaDismissBtn" class="pwa-btn-secondary" onclick="dismissPwaBanner()">لاحقاً</button>
+      </div>
+    </div>
+
+    <!-- iOS Safari Instructions Modal -->
+    <div id="iosInstallModal" class="ios-modal-overlay" style="display: none;" onclick="closeIosModal(event)">
+      <div class="ios-modal-card" onclick="event.stopPropagation()">
+        <button class="ios-modal-close" onclick="closeIosModal()">✕</button>
+        <img src="/images/sansiro_logo.png" alt="San Siro" class="ios-modal-logo">
+        <h3 id="iosModalTitle">تثبيت التطبيق على الآيفون 📲</h3>
+        <p id="iosModalDesc">لتثبيت التطبيق كأيقونة على شاشتك الرئيسية، اتبع الخطوات البسيطة التالية:</p>
+        <div class="ios-steps">
+          <div class="ios-step">
+            <div class="ios-step-num">1</div>
+            <div class="ios-step-text">اضغط على زر المشاركة <strong>مشاركة (Share) ⎋</strong> في شريط Safari بالأسفل.</div>
+          </div>
+          <div class="ios-step">
+            <div class="ios-step-num">2</div>
+            <div class="ios-step-text">مرر القائمة لأسفل واختر <strong>"إضافة إلى الصفحة الرئيسية" (Add to Home Screen) ➕</strong>.</div>
+          </div>
+          <div class="ios-step">
+            <div class="ios-step-num">3</div>
+            <div class="ios-step-text">اضغط على <strong>"إضافة" (Add)</strong> في الزاوية العلوية لتثبيت التطبيق!</div>
+          </div>
+        </div>
+        <button class="pwa-btn-primary" style="width: 100%; margin-top: 16px;" onclick="closeIosModal()">فهمت، حسناً 👍</button>
+      </div>
+    </div>
   </div>
 
   <script>
     (function() {
+      // 1. Service Worker Registration
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(err => {
+            console.log('SW registration error:', err);
+          });
+        });
+      }
+
       const BASE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjdUrhV6PQIgWEJjGT28ZgfOknPC3iW6nHU1e5HFWxxwmlz9WuHwavW0OCf9bRzGg9/exec";
       const frame = document.getElementById('app-frame');
       const loader = document.getElementById('loader');
 
-      // Forward any query params (e.g., ?page=admin)
+      // Forward query params (e.g., ?page=admin)
       const currentQuery = window.location.search || '';
       frame.src = BASE_APPS_SCRIPT_URL + currentQuery;
 
@@ -180,6 +460,127 @@
 
       frame.onload = hideLoader;
       setTimeout(hideLoader, 3500);
+
+      // =========================================================================
+      // PWA Install State & Logic
+      // =========================================================================
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isAdminPage = window.location.search.toLowerCase().includes('page=admin');
+
+      let deferredPrompt = null;
+      let currentPromptType = isAdminPage ? 'admin' : 'booking';
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent default mini-infobar
+        e.preventDefault();
+        deferredPrompt = e;
+        console.log('PWA: beforeinstallprompt captured');
+      });
+
+      window.addEventListener('appinstalled', () => {
+        console.log('PWA: App installed successfully');
+        deferredPrompt = null;
+        dismissPwaBanner();
+      });
+
+      // Function to show the install banner
+      window.showInstallBanner = function(type) {
+        if (isStandalone) return;
+        currentPromptType = type;
+
+        const banner = document.getElementById('pwaInstallBanner');
+        const title = document.getElementById('pwaTitle');
+        const desc = document.getElementById('pwaDesc');
+
+        if (type === 'admin') {
+          title.textContent = 'تثبيت لوحة الإدارة 📲';
+          desc.textContent = 'أضف لوحة التحكم لشاشة هاتفك للوصول الفوري للمباريات وتأكيد العربون بضغطة زر!';
+        } else {
+          title.textContent = 'تثبيت تطبيق سان سيرو 📲';
+          desc.textContent = 'أضف التطبيق لشاشة هاتفك لحجز الملاعب والوصول السريع بدون متصفح!';
+        }
+
+        banner.style.display = 'flex';
+      };
+
+      window.dismissPwaBanner = function() {
+        const banner = document.getElementById('pwaInstallBanner');
+        if (banner) banner.style.display = 'none';
+        sessionStorage.setItem('pwa_dismissed_' + currentPromptType, '1');
+      };
+
+      window.handlePwaInstallClick = function() {
+        dismissPwaBanner();
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('User accepted install prompt');
+            }
+            deferredPrompt = null;
+          });
+        } else if (isIos) {
+          showIosModal(currentPromptType);
+        } else {
+          // Fallback instructions for browsers that don't support beforeinstallprompt
+          showIosModal(currentPromptType);
+        }
+      };
+
+      window.showIosModal = function(type) {
+        const modal = document.getElementById('iosInstallModal');
+        const title = document.getElementById('iosModalTitle');
+        const desc = document.getElementById('iosModalDesc');
+        if (type === 'admin') {
+          title.textContent = 'تثبيت لوحة الإدارة على الهاتف 📲';
+          desc.textContent = 'لتثبيت لوحة التحكم كأيقونة تطبيق مستقل على شاشة هاتفك، اتبع الخطوات التالية:';
+        } else {
+          title.textContent = 'تثبيت تطبيق سان سيرو 📲';
+          desc.textContent = 'لتثبيت تطبيق الحجز كأيقونة مستقلة على شاشة هاتفك، اتبع الخطوات التالية:';
+        }
+        modal.style.display = 'flex';
+      };
+
+      window.closeIosModal = function(e) {
+        if (!e || e.target === document.getElementById('iosInstallModal') || e.target.classList.contains('ios-modal-close') || e.target.tagName === 'BUTTON') {
+          document.getElementById('iosInstallModal').style.display = 'none';
+        }
+      };
+
+      // Handle messaging from Apps Script iframe
+      window.addEventListener('message', (event) => {
+        if (!event.data) return;
+        const data = event.data;
+
+        // Admin logged in successfully
+        if (data.type === 'ADMIN_AUTHENTICATED') {
+          console.log('PWA: Received ADMIN_AUTHENTICATED message');
+          if (!isStandalone && sessionStorage.getItem('pwa_dismissed_admin') !== '1') {
+            setTimeout(() => {
+              showInstallBanner('admin');
+            }, 600);
+          }
+        }
+
+        // Trigger manual install from iframe button
+        if (data.type === 'TRIGGER_INSTALL') {
+          const target = data.target || (isAdminPage ? 'admin' : 'booking');
+          currentPromptType = target;
+          handlePwaInstallClick();
+        }
+      });
+
+      // Automatic trigger on Player Booking page
+      if (!isAdminPage) {
+        window.addEventListener('DOMContentLoaded', () => {
+          setTimeout(() => {
+            if (!isStandalone && sessionStorage.getItem('pwa_dismissed_booking') !== '1') {
+              showInstallBanner('booking');
+            }
+          }, 2500);
+        });
+      }
     })();
   </script>
 </body>
