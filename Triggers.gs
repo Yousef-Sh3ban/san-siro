@@ -146,12 +146,12 @@ function applyBookingConfirmation(phone, playerName, matchDate) {
         custSheet.getRange(rowNum, COL.CUSTOMERS.LAST_BOOKING_DATE).setValue(matchDate);
       }
     } else {
-      // Append new customer as Trusted
+      // Append new customer as New (requires PIN setup and deposit verification online)
       var newRow = [
         phone,
         playerName || 'كابتن',
         '', // PIN blank, will set on next online visit
-        CUSTOMER_STATUS.TRUSTED,
+        CUSTOMER_STATUS.NEW,
         1,
         0,
         matchDate || todayStr(),
@@ -226,13 +226,21 @@ function applyBookingNoShow(phone, playerName, matchDate) {
  */
 function revertBookingNoShow(phone) {
   try {
+    var settings = getSettings();
     var custSheet = getSheet(SHEETS.CUSTOMERS);
     var rowNum = findCustomerRow(phone, custSheet);
     if (!rowNum) return;
 
     var curNoShows = Number(custSheet.getRange(rowNum, COL.CUSTOMERS.NO_SHOW_COUNT).getValue()) || 0;
+    var curStatus = String(custSheet.getRange(rowNum, COL.CUSTOMERS.STATUS).getValue() || '').trim();
     var updatedCount = Math.max(0, curNoShows - 1);
     custSheet.getRange(rowNum, COL.CUSTOMERS.NO_SHOW_COUNT).setValue(updatedCount);
+
+    if (curStatus === CUSTOMER_STATUS.BLOCKED && updatedCount < settings.blockThreshold) {
+      var pin = String(custSheet.getRange(rowNum, COL.CUSTOMERS.PIN).getValue() || '').trim();
+      var restored = (pin && updatedCount < settings.noShowThreshold) ? CUSTOMER_STATUS.TRUSTED : CUSTOMER_STATUS.NEW;
+      custSheet.getRange(rowNum, COL.CUSTOMERS.STATUS).setValue(restored);
+    }
   } catch (e) {
     Logger.log('فشل التراجع عن حالة No-Show: ' + e.message);
   }

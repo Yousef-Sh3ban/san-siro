@@ -177,6 +177,33 @@ function runSelfTests() {
   var sampleBookingId = 'BK-20261030-101';
   assert('Booking ID matches pattern BK-YYYYMMDD-XXXX', /^BK-\d{8}-\d+$/.test(sampleBookingId) === true);
 
+  // --------------------------------------------------------------------------
+  // TEST SUITE 6: Security Hardening & Canonical Slot Validation
+  // --------------------------------------------------------------------------
+  Logger.log('[Suite 6: Security Hardening & Canonical Slot Validation]');
+  // Hardcoded passwords must be rejected
+  assert('Reject hardcoded fallback sansiro2026', isAdminAuthorized('sansiro2026') === false);
+  assert('Reject hardcoded fallback admin123', isAdminAuthorized('admin123') === false);
+  assert('Reject hardcoded fallback 1234', isAdminAuthorized('1234') === false);
+
+  // Name masking
+  assert('Mask single name', maskPlayerName('محمد') === 'م***');
+  assert('Mask compound name', maskPlayerName('محمد صلاح') === 'م*** ص***');
+
+  // parseNumericSetting allows legitimate 0
+  assert('parseNumericSetting keeps 0', parseNumericSetting('0', 50, 0) === 0);
+  assert('parseNumericSetting falls back on empty', parseNumericSetting('', 50, 0) === 50);
+
+  // parseConfigHour with Date object
+  var mockDate = new Date(1899, 11, 30, 2, 0, 0); // 02:00 AM Date cell
+  assert('parseConfigHour wraps closeHour for Date object', parseConfigHour(mockDate, 26, true, 14) === 26);
+
+  // getCanonicalSlots generates correct count and format
+  var slotsGen = getCanonicalSlots(14, 26, 60);
+  assert('getCanonicalSlots generates 12 slots for 14-26 operating window', slotsGen.length === 12);
+  assert('First slot is 02:00 PM - 03:00 PM', slotsGen[0].timeSlot === '02:00 PM - 03:00 PM');
+  assert('Last slot is 01:00 AM - 02:00 AM', slotsGen[11].timeSlot === '01:00 AM - 02:00 AM');
+
   Logger.log('====================================================');
   Logger.log('ملخص النتائج: ' + results.passed + ' نجح | ' + results.failed + ' فشل');
   Logger.log('====================================================');

@@ -271,9 +271,56 @@ function safeStringCompare(a, b) {
   return diff === 0;
 }
 
+var ADMIN_LOCKOUT_MAX_ATTEMPTS = 5;
+var ADMIN_LOCKOUT_DURATION_SEC = 900; // 15 minutes
+var CACHE_KEY_ADMIN_ATTEMPTS = 'admin_login_fail_count';
+var CACHE_KEY_ADMIN_LOCKOUT = 'admin_login_locked_until';
+
 /**
- * Validates the provided admin key against the stored ADMIN_KEY property,
- * the Pricing_Settings sheet Admin_Password, or the default master password.
+ * Checks if admin login is currently locked out due to excessive failed attempts.
+ *
+ * @returns {{allowed: boolean, remainingMinutes?: number}}
+ */
+function checkAdminRateLimit() {
+  var cache = CacheService.getScriptCache();
+  var lockedUntil = cache.get(CACHE_KEY_ADMIN_LOCKOUT);
+  if (lockedUntil) {
+    var waitMin = Math.ceil((Number(lockedUntil) - Date.now()) / 60000);
+    if (waitMin > 0) {
+      return { allowed: false, remainingMinutes: waitMin };
+    }
+  }
+  return { allowed: true };
+}
+
+/**
+ * Records a failed admin login attempt and locks out if threshold reached.
+ */
+function recordAdminLoginFailure() {
+  var cache = CacheService.getScriptCache();
+  var curAttempts = Number(cache.get(CACHE_KEY_ADMIN_ATTEMPTS) || 0) + 1;
+  if (curAttempts >= ADMIN_LOCKOUT_MAX_ATTEMPTS) {
+    var lockUntil = Date.now() + (ADMIN_LOCKOUT_DURATION_SEC * 1000);
+    cache.put(CACHE_KEY_ADMIN_LOCKOUT, String(lockUntil), ADMIN_LOCKOUT_DURATION_SEC);
+    cache.remove(CACHE_KEY_ADMIN_ATTEMPTS);
+  } else {
+    cache.put(CACHE_KEY_ADMIN_ATTEMPTS, String(curAttempts), ADMIN_LOCKOUT_DURATION_SEC);
+  }
+}
+
+/**
+ * Resets admin login failure counters upon successful authentication.
+ */
+function resetAdminLoginFailures() {
+  var cache = CacheService.getScriptCache();
+  cache.remove(CACHE_KEY_ADMIN_ATTEMPTS);
+  cache.remove(CACHE_KEY_ADMIN_LOCKOUT);
+}
+
+/**
+ * Validates the provided admin key against the stored ADMIN_KEY property
+ * or the Pricing_Settings sheet Admin_Password.
+ * Does NOT permit hardcoded fallback passwords.
  *
  * @param {string} key
  * @returns {boolean}
@@ -296,25 +343,31 @@ function isAdminAuthorized(key) {
     }
   } catch (e) {}
 
-  // 3. Fallback default passwords for initial setup
-  if (cleanKey === 'sansiro2026' || cleanKey === 'admin123' || cleanKey === '1234') {
-    return true;
-  }
-
   return false;
 }
 
 /**
- * Public RPC to verify admin key from the login screen.
+ * Public RPC to verify admin key from the login screen with rate limiting.
  *
  * @param {string} key
  * @returns {Object} response
  */
 function verifyAdminKey(key) {
   try {
+    var limit = checkAdminRateLimit();
+    if (!limit.allowed) {
+      return responseError(
+        'LOCKED_OUT',
+        'تم قفل تسجيل الدخول مؤقتاً لتكرار إدخال كلمة مرور خاطئة. يرجى الانتظار ' + limit.remainingMinutes + ' دقيقة.'
+      );
+    }
+
     if (isAdminAuthorized(key)) {
+      resetAdminLoginFailures();
       return responseSuccess({ authorized: true });
     }
+
+    recordAdminLoginFailure();
     return responseError('INVALID_KEY', 'كلمة مرور الإدارة غير صحيحة، يرجى المحاولة مرة أخرى.');
   } catch (err) {
     return responseError('AUTH_ERROR', err.message);

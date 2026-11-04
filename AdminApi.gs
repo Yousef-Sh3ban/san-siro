@@ -56,7 +56,8 @@ function getAdminDashboard(key, targetDate) {
       var bPhone = normalizePhone(r[COL.BOOKINGS.PLAYER_PHONE - 1]);
       var bPrice = Number(r[COL.BOOKINGS.CALCULATED_PRICE - 1]) || 0;
       var bDeposit = Number(r[COL.BOOKINGS.DEPOSIT_AMOUNT - 1]) || 0;
-      var bRemaining = Number(r[COL.BOOKINGS.REMAINING_CASH - 1]) || Math.max(0, bPrice - bDeposit);
+      var remVal = r[COL.BOOKINGS.REMAINING_CASH - 1];
+      var bRemaining = (remVal !== undefined && remVal !== '' && !isNaN(Number(remVal))) ? Number(remVal) : Math.max(0, bPrice - bDeposit);
       var bSource = String(r[COL.BOOKINGS.SOURCE - 1] || 'Online');
 
       var item = {
@@ -276,6 +277,25 @@ function adminBlockSlot(key, pitchId, dateStr, timeSlot, reason) {
       var cleanDate = normalizeDateCell(dateStr);
       var label = '🔧 صيانة: ' + (reason || 'مغلق للصيانة أو مناسبة خاصة');
       var bookSheet = getSheet(SHEETS.BOOKINGS);
+
+      // Check slot availability before blocking
+      var lastRow = bookSheet.getLastRow();
+      if (lastRow > 1) {
+        var existing = bookSheet.getRange(2, 1, lastRow - 1, COL.BOOKINGS.SLOT_STATUS).getValues();
+        for (var i = 0; i < existing.length; i++) {
+          var rDate = normalizeDateCell(existing[i][COL.BOOKINGS.DATE - 1]);
+          var rPitch = String(existing[i][COL.BOOKINGS.PITCH_ID - 1] || '').trim();
+          var rSlot = String(existing[i][COL.BOOKINGS.TIME_SLOT - 1] || '').trim();
+          var rStatus = String(existing[i][COL.BOOKINGS.SLOT_STATUS - 1] || '').trim();
+
+          if (rDate === cleanDate && rPitch === pitchId && rSlot === timeSlot) {
+            if (rStatus === STATUS.CONFIRMED || rStatus === STATUS.OWNER_RESERVED) {
+              return responseError('SLOT_TAKEN', 'هذه الفترة محجوزة أو مغلقة بالفعل في الجدول.');
+            }
+          }
+        }
+      }
+
       var bookingId = generateBookingId(cleanDate);
       var dayName = dayNameAr(cleanDate);
       var nowStr = Utilities.formatDate(new Date(), TIMEZONE_CAIRO, "yyyy-MM-dd'T'HH:mm:ss");
@@ -333,19 +353,50 @@ function adminSetStatus(key, bookingId, newStatus) {
 
       var rowData = bookSheet.getRange(rowNum, 1, 1, COL.BOOKINGS.CANCELLED_AT).getValues()[0];
       var oldStatus = String(rowData[COL.BOOKINGS.SLOT_STATUS - 1] || '').trim();
+      var pitchId = String(rowData[COL.BOOKINGS.PITCH_ID - 1] || '').trim();
+      var timeSlot = String(rowData[COL.BOOKINGS.TIME_SLOT - 1] || '').trim();
       var phone = normalizePhone(rowData[COL.BOOKINGS.PLAYER_PHONE - 1]);
       var playerName = String(rowData[COL.BOOKINGS.PLAYER_NAME - 1] || '').trim();
       var matchDate = normalizeDateCell(rowData[COL.BOOKINGS.DATE - 1]);
       var nowStr = Utilities.formatDate(new Date(), TIMEZONE_CAIRO, "yyyy-MM-dd'T'HH:mm:ss");
 
+      if (oldStatus === newStatus) {
+        return responseSuccess({
+          message: 'الحجز بالفعل في هذه الحالة: ' + newStatus,
+          bookingId: bookingId,
+          newStatus: newStatus
+        });
+      }
+
       // Validate transitions
       if (newStatus === STATUS.CONFIRMED) {
+        // Prevent double booking: verify no OTHER active booking occupies this slot
+        var totalRows = bookSheet.getLastRow();
+        if (totalRows > 1) {
+          var allBookings = bookSheet.getRange(2, 1, totalRows - 1, COL.BOOKINGS.SLOT_STATUS).getValues();
+          for (var bIdx = 0; bIdx < allBookings.length; bIdx++) {
+            var bRowNum = bIdx + 2;
+            if (bRowNum === rowNum) continue; // Skip self
+            var rDate = normalizeDateCell(allBookings[bIdx][COL.BOOKINGS.DATE - 1]);
+            var rPitch = String(allBookings[bIdx][COL.BOOKINGS.PITCH_ID - 1] || '').trim();
+            var rSlot = String(allBookings[bIdx][COL.BOOKINGS.TIME_SLOT - 1] || '').trim();
+            var rStatus = String(allBookings[bIdx][COL.BOOKINGS.SLOT_STATUS - 1] || '').trim();
+
+            if (rDate === matchDate && rPitch === pitchId && rSlot === timeSlot) {
+              if (rStatus === STATUS.CONFIRMED || rStatus === STATUS.OWNER_RESERVED) {
+                return responseError('SLOT_ALREADY_CONFIRMED', 'الفترة محجوزة بالفعل بحجز مؤكد آخر (' + rStatus + '). يرجى إلغاء الحجز الآخر أولاً.');
+              }
+            }
+          }
+        }
+
         bookSheet.getRange(rowNum, COL.BOOKINGS.SLOT_STATUS).setValue(STATUS.CONFIRMED);
         bookSheet.getRange(rowNum, COL.BOOKINGS.LOCK_EXPIRATION).setValue('');
+        bookSheet.getRange(rowNum, COL.BOOKINGS.CANCELLED_AT).setValue('');
         if (phone) applyBookingConfirmation(phone, playerName, matchDate);
       } else if (newStatus === STATUS.NO_SHOW) {
         bookSheet.getRange(rowNum, COL.BOOKINGS.SLOT_STATUS).setValue(STATUS.NO_SHOW);
-        if (phone) applyBookingNoShow(phone, playerName, matchDate);
+        if (phone && oldStatus !== STATUS.NO_SHOW) applyBookingNoShow(phone, playerName, matchDate);
       } else if (newStatus === STATUS.CANCELLED) {
         bookSheet.getRange(rowNum, COL.BOOKINGS.SLOT_STATUS).setValue(STATUS.CANCELLED);
         bookSheet.getRange(rowNum, COL.BOOKINGS.CANCELLED_AT).setValue(nowStr);

@@ -170,17 +170,7 @@ function getAvailableSlots(pitchId, dateStr) {
     var closeHour = settings.closeHour; // e.g. 26 (02:00 next day)
     var slotMins = settings.slotMinutes; // e.g. 60
 
-    var generatedSlots = [];
-    var totalOpenMinutes = (closeHour - openHour) * 60;
-    var steps = Math.floor(totalOpenMinutes / slotMins);
-
-    for (var s = 0; s < steps; s++) {
-      var slotStart = (openHour * 60) + (s * slotMins);
-      generatedSlots.push({
-        startMinutes: slotStart,
-        timeSlot: formatSlot(slotStart, slotMins)
-      });
-    }
+    var generatedSlots = getCanonicalSlots(openHour, closeHour, slotMins);
 
     // 2. Load Bookings for this pitch and date
     var bookSheet = getSheet(SHEETS.BOOKINGS);
@@ -224,10 +214,13 @@ function getAvailableSlots(pitchId, dateStr) {
     if (cleanDate === today) {
       var nowCairo = nowInCairo();
       var cHour = nowCairo.getHours();
-      if (cHour < openHour && openHour >= 12) {
-        cHour += 24; // Handle post-midnight current time
+      var cMin = nowCairo.getMinutes();
+      if (cHour >= openHour) {
+        currentCairoMinutes = cHour * 60 + cMin;
+      } else {
+        // Before opening time today: daytime/evening slots are in the future
+        currentCairoMinutes = 0;
       }
-      currentCairoMinutes = cHour * 60 + nowCairo.getMinutes();
     }
 
     // 4. Load discounts once for this date to pass into pricing context
@@ -283,8 +276,41 @@ function getAvailableSlots(pitchId, dateStr) {
 // 3. CUSTOMER LOOKUP & AUTHENTICATION (T5.4)
 // ============================================================================
 
+var CACHE_KEY_LOOKUP_PREFIX = 'rate_lookup_';
+
 /**
- * Looks up customer status by phone without revealing any hashes, PINs, or sensitive statistics.
+ * Checks lookup rate limit per phone to prevent automated scraping.
+ *
+ * @param {string} phone
+ * @returns {boolean}
+ */
+function checkLookupRateLimit(phone) {
+  var cache = CacheService.getScriptCache();
+  var count = Number(cache.get(CACHE_KEY_LOOKUP_PREFIX + phone) || 0);
+  if (count >= 20) {
+    return false;
+  }
+  cache.put(CACHE_KEY_LOOKUP_PREFIX + phone, String(count + 1), 600); // 10 minutes
+  return true;
+}
+
+/**
+ * Masks customer name to prevent PII harvesting by unauthenticated callers.
+ *
+ * @param {string} name
+ * @returns {string} Masked name
+ */
+function maskPlayerName(name) {
+  if (!name) return '';
+  var parts = String(name).trim().split(/\s+/);
+  return parts.map(function (p) {
+    if (p.length <= 1) return p;
+    return p.charAt(0) + '***';
+  }).join(' ');
+}
+
+/**
+ * Looks up customer status by phone without revealing any hashes, PINs, or raw PII.
  *
  * @param {string} phone
  * @returns {Object} Standard API response with customer status category
@@ -294,6 +320,11 @@ function lookupCustomer(phone) {
     var cleanPhone = normalizePhone(phone);
     if (!isValidEgyptianPhone(cleanPhone)) {
       return responseError('INVALID_PHONE', 'يرجى إدخال رقم هاتف محمول مصري صحيح (11 رقم).');
+    }
+
+    // Check rate limit per phone to prevent enumeration
+    if (!checkLookupRateLimit(cleanPhone)) {
+      return responseError('TOO_MANY_REQUESTS', 'تم تجاوز الحد الأقصى لمحاولات الاستعلام. يرجى الانتظار بضع دقائق.');
     }
 
     // Check rate limit lockout first
@@ -324,12 +355,13 @@ function lookupCustomer(phone) {
     var pinHash = String(rowData[COL.CUSTOMERS.PIN - 1] || '').trim();
     var status = String(rowData[COL.CUSTOMERS.STATUS - 1] || CUSTOMER_STATUS.NEW).trim();
     var noShowCount = Number(rowData[COL.CUSTOMERS.NO_SHOW_COUNT - 1]) || 0;
+    var maskedName = maskPlayerName(playerName);
 
     // Check Blocked status
     if (status === CUSTOMER_STATUS.BLOCKED || noShowCount >= settings.blockThreshold) {
       return responseSuccess({
         state: 'BLOCKED',
-        name: playerName,
+        name: maskedName,
         message: 'الحجز الإلكتروني مقيد لهذا الرقم لمخالفة تعليمات الحضور. يرجى التواصل مع إدارة الملعب مباشرة.'
       });
     }
@@ -337,15 +369,16 @@ function lookupCustomer(phone) {
     // Check Trusted status
     if (status === CUSTOMER_STATUS.TRUSTED) {
       if (!pinHash) {
+        // Unverified walk-in account without PIN: treat as new customer to enforce deposit
         return responseSuccess({
-          state: 'TRUSTED_SETUP',
-          name: playerName,
-          message: 'أهلاً بك كابتن ' + playerName + '! يرجى تعيين رمز PIN المكون من 4 أرقام لتأمين حجوزاتك الفورية.'
+          state: 'NEW_UNKNOWN',
+          name: '',
+          remainingAttempts: rateLimit.remainingAttempts
         });
       } else {
         return responseSuccess({
           state: 'TRUSTED_PIN',
-          name: playerName,
+          name: maskedName,
           remainingAttempts: rateLimit.remainingAttempts
         });
       }
@@ -355,13 +388,13 @@ function lookupCustomer(phone) {
     if (pinHash) {
       return responseSuccess({
         state: 'NEW_KNOWN',
-        name: playerName,
+        name: maskedName,
         remainingAttempts: rateLimit.remainingAttempts
       });
     } else {
       return responseSuccess({
         state: 'NEW_UNKNOWN',
-        name: playerName,
+        name: '',
         remainingAttempts: rateLimit.remainingAttempts
       });
     }
@@ -409,7 +442,7 @@ function verifyAndBook(payload) {
       var dateStr = normalizeDateCell(payload.date);
       var timeSlot = String(payload.timeSlot || '').trim();
       var phone = normalizePhone(payload.phone);
-      var name = String(payload.name || '').trim();
+      var name = String(payload.name || '').replace(/[<>'"]/g, '').trim().substring(0, 60);
       var pin = normalizePinInput(payload.pin);
       var isSettingPin = !!payload.isSettingPin;
 
@@ -429,6 +462,31 @@ function verifyAndBook(payload) {
 
       if (dateStr < today || dateStr > addDays(today, settings.bookingDaysAhead)) {
         return responseError('INVALID_DATE', 'تاريخ الحجز خارج النطاق المسموح.');
+      }
+
+      // Check canonical slot validity
+      var canonicalSlots = getCanonicalSlots(settings.openHour, settings.closeHour, settings.slotMinutes);
+      var matchedSlot = null;
+      for (var cs = 0; cs < canonicalSlots.length; cs++) {
+        if (canonicalSlots[cs].timeSlot === timeSlot) {
+          matchedSlot = canonicalSlots[cs];
+          break;
+        }
+      }
+      if (!matchedSlot) {
+        return responseError('INVALID_SLOT', 'الفترة الزمنية المحددة غير صحيحة أو غير متاحة في جدول التشغيل.');
+      }
+
+      // Check if slot has already elapsed today in Cairo (10-minute grace period)
+      if (dateStr === today) {
+        var nowCairo = nowInCairo();
+        var cHour = nowCairo.getHours();
+        if (cHour >= settings.openHour) {
+          var cMins = cHour * 60 + nowCairo.getMinutes();
+          if ((matchedSlot.startMinutes - 10) < cMins) {
+            return responseError('SLOT_PAST', 'عفواً، هذه الفترة بدأت بالفعل ولا يمكن حجزها.');
+          }
+        }
       }
 
       // Check Rate Limit
@@ -471,11 +529,11 @@ function verifyAndBook(payload) {
       var custRowNum = findCustomerRow(phone, custSheet);
       var customerStatus = CUSTOMER_STATUS.NEW;
       var storedHash = '';
-      var playerName = name;
+      var playerName = name || 'كابتن';
 
       if (custRowNum) {
         var cData = custSheet.getRange(custRowNum, 1, 1, COL.CUSTOMERS.CREATED_AT).getValues()[0];
-        playerName = String(cData[COL.CUSTOMERS.PLAYER_NAME - 1] || name).trim();
+        playerName = String(cData[COL.CUSTOMERS.PLAYER_NAME - 1] || name || 'كابتن').trim();
         storedHash = String(cData[COL.CUSTOMERS.PIN - 1] || '').trim();
         customerStatus = String(cData[COL.CUSTOMERS.STATUS - 1] || CUSTOMER_STATUS.NEW).trim();
         var noShows = Number(cData[COL.CUSTOMERS.NO_SHOW_COUNT - 1]) || 0;
@@ -491,6 +549,9 @@ function verifyAndBook(payload) {
           }
           storedHash = hashPin(phone, pin);
           custSheet.getRange(custRowNum, COL.CUSTOMERS.PIN).setValue(storedHash);
+          // Initial online PIN setup requires deposit verification
+          customerStatus = CUSTOMER_STATUS.NEW;
+          custSheet.getRange(custRowNum, COL.CUSTOMERS.STATUS).setValue(CUSTOMER_STATUS.NEW);
         } else if (storedHash) {
           // Verify PIN
           var isMatch = verifyPin(phone, pin, storedHash);
@@ -532,8 +593,9 @@ function verifyAndBook(payload) {
       }
 
       // 4. Calculate Final Price
-      var startMinutes = parseSlotStart(timeSlot, settings.openHour);
-      var priceResult = getPriceForSlot(pitchId, dateStr, startMinutes, { settings: settings });
+      var startMinutes = matchedSlot.startMinutes;
+      var discounts = loadDiscountsForDate(dateStr);
+      var priceResult = getPriceForSlot(pitchId, dateStr, startMinutes, { settings: settings, discounts: discounts });
       var finalPrice = priceResult.price;
       var bookingId = generateBookingId(dateStr);
       var dayName = dayNameAr(dateStr);
@@ -562,11 +624,15 @@ function verifyAndBook(payload) {
 
         bookSheet.appendRow(confirmedBookingRow);
 
-        // Update customer statistics
+        // Update customer statistics safely
         if (custRowNum) {
-          var curBookings = Number(custSheet.getRange(custRowNum, COL.CUSTOMERS.TOTAL_BOOKINGS).getValue()) || 0;
-          custSheet.getRange(custRowNum, COL.CUSTOMERS.TOTAL_BOOKINGS).setValue(curBookings + 1);
-          custSheet.getRange(custRowNum, COL.CUSTOMERS.LAST_BOOKING_DATE).setValue(dateStr);
+          try {
+            var curBookings = Number(custSheet.getRange(custRowNum, COL.CUSTOMERS.TOTAL_BOOKINGS).getValue()) || 0;
+            custSheet.getRange(custRowNum, COL.CUSTOMERS.TOTAL_BOOKINGS).setValue(curBookings + 1);
+            custSheet.getRange(custRowNum, COL.CUSTOMERS.LAST_BOOKING_DATE).setValue(dateStr);
+          } catch (e) {
+            Logger.log('Customer stats update error: ' + e.message);
+          }
         }
 
         return responseSuccess({

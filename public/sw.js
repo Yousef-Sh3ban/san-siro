@@ -1,5 +1,5 @@
 // San Siro PWA Service Worker
-const CACHE_NAME = 'sansiro-cache-v1';
+const CACHE_NAME = 'sansiro-cache-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/manifest.json',
@@ -37,14 +37,36 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Network-first strategy for navigation requests so app shell updates immediately
+  if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match(event.request).then((cached) => cached || caches.match('/'));
+        })
+    );
+    return;
+  }
+
+  // Stale-while-revalidate for local static assets
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).catch(() => {
-        return caches.match('/');
-      });
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+        }
+        return networkResponse;
+      }).catch(() => cachedResponse);
+
+      return cachedResponse || fetchPromise;
     })
   );
 });

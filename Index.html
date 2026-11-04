@@ -937,8 +937,11 @@
     }
 
     .status-Confirmed { background: #064E3B; color: #34D399; border: 1px solid #059669; }
-    .status-Pending { background: #78350F; color: #FCD34D; border: 1px solid #D97706; }
-    .status-Reserved { background: #1E3A8A; color: #93C5FD; border: 1px solid #2563EB; }
+    .status-Pending, .status-PendingDeposit { background: #78350F; color: #FCD34D; border: 1px solid #D97706; }
+    .status-Reserved, .status-OwnerReserved { background: #1E3A8A; color: #93C5FD; border: 1px solid #2563EB; }
+    .status-NoShow, .status-No-Show { background: #7F1D1D; color: #FCA5A5; border: 1px solid #DC2626; }
+    .status-Cancelled { background: #374151; color: #9CA3AF; border: 1px solid #4B5563; }
+    .status-Expired { background: #1F2937; color: #6B7280; border: 1px solid #374151; }
 
     .btn-cancel {
       background: rgba(239, 68, 68, 0.15);
@@ -1278,21 +1281,47 @@
     }
 
     // Toast Notification Utility
+    let toastTimeout = null;
     function showToast(message, isError = false) {
       const toast = document.getElementById('toast');
       toast.textContent = message;
       toast.className = 'toast show ' + (isError ? 'toast-error' : 'toast-success');
-      setTimeout(() => {
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
         toast.className = 'toast';
       }, 3500);
     }
 
-    // Copy to Clipboard
+    // Copy to Clipboard with Fallback
     function copyText(elementId) {
-      const text = document.getElementById(elementId).textContent.trim();
-      navigator.clipboard.writeText(text).then(() => {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const text = el.textContent.trim();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('تم نسخ ' + text + ' إلى الحافظة.');
+        }).catch(() => {
+          fallbackCopyText(text);
+        });
+      } else {
+        fallbackCopyText(text);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      try {
+        const temp = document.createElement('textarea');
+        temp.value = text;
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
         showToast('تم نسخ ' + text + ' إلى الحافظة.');
-      });
+      } catch (e) {
+        showToast('تعذر النسخ تلقائياً: ' + text);
+      }
     }
 
     // App Initialization
@@ -1368,7 +1397,11 @@
       loadSlots();
     }
 
+    let currentSlotsReqId = 0;
     async function loadSlots() {
+      const reqId = ++currentSlotsReqId;
+      const pitch = state.currentPitch;
+      const date = state.selectedDate;
       const grid = document.getElementById('slotsGrid');
       const counter = document.getElementById('slotCounterBadge');
 
@@ -1381,7 +1414,8 @@
       `;
 
       try {
-        const res = await api('getAvailableSlots', state.currentPitch, state.selectedDate);
+        const res = await api('getAvailableSlots', pitch, date);
+        if (reqId !== currentSlotsReqId) return; // Stale request, ignore
         if (!res || !res.ok) {
           grid.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><h4>فشل تحميل المواعيد</h4><p>${res ? res.message : ''}</p></div>`;
           counter.textContent = '0 متاح';

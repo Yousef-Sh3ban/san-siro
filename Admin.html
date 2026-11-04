@@ -200,9 +200,11 @@
     }
 
     .status-Confirmed { background: #064E3B; color: #34D399; }
-    .status-Pending { background: #78350F; color: #FCD34D; }
-    .status-OwnerReserved { background: #1E3A8A; color: #93C5FD; }
-    .status-NoShow { background: #7F1D1D; color: #FCA5A5; }
+    .status-Pending, .status-PendingDeposit { background: #78350F; color: #FCD34D; }
+    .status-OwnerReserved, .status-Reserved { background: #1E3A8A; color: #93C5FD; }
+    .status-NoShow, .status-No-Show { background: #7F1D1D; color: #FCA5A5; }
+    .status-Cancelled { background: #374151; color: #9CA3AF; }
+    .status-Expired { background: #1F2937; color: #6B7280; }
 
     .card-body {
       font-size: 13px;
@@ -364,11 +366,6 @@
       <button id="btnLoginSubmit" class="btn-submit" onclick="submitAdminLogin()" style="width: 100%; padding: 14px; font-size: 16px; font-weight: 800; background: linear-gradient(135deg, #10B981 0%, #0B6E4F 100%); color: #fff; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4); transition: all 0.2s;">
         تسجيل الدخول 🔐
       </button>
-
-      <div style="margin-top: 20px; font-size: 12px; color: var(--text-dim); line-height: 1.6; background: rgba(16, 185, 129, 0.08); padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.15);">
-        🔑 كلمة المرور الافتراضية: <strong style="color: var(--accent-gold);">sansiro2026</strong><br>
-        (يمكنك تغييرها في أي وقت من شيت <span style="color:#FFF;">Pricing_Settings</span>)
-      </div>
     </div>
   </div>
 
@@ -404,6 +401,17 @@
       <div class="kpi-card">
         <div class="kpi-lbl">عربين تنتظر التأكيد</div>
         <div class="kpi-val" id="sumPendingCount" style="color: #F87171;">0</div>
+      </div>
+    </div>
+
+    <!-- PENDING DEPOSITS ALERT SECTION -->
+    <div id="pendingReviewSection" style="display: none; margin-bottom: 20px;">
+      <div style="background: rgba(220, 38, 38, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 14px; padding: 14px 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <h3 style="font-size: 15px; font-weight: 800; color: #FCA5A5; margin: 0;">⏳ حجوزات بانتظار التحقق من العربون</h3>
+          <span id="pendingBadgeCount" style="background: #DC2626; color: #FFF; font-size: 12px; font-weight: 800; padding: 2px 8px; border-radius: 10px;">0</span>
+        </div>
+        <div id="pendingReviewList"></div>
       </div>
     </div>
 
@@ -564,34 +572,79 @@
       }
     }
 
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     function logoutAdmin() {
       sessionStorage.removeItem('SANSIRO_ADMIN_KEY');
       ADMIN_KEY = '';
+      if (window.history && window.history.replaceState) {
+        try {
+          window.history.replaceState(null, document.title, window.location.pathname + '?page=admin');
+        } catch (e) {}
+      }
       showLoginView();
+      toast('تم تسجيل الخروج بنجاح.');
     }
 
     let dashboardData = null;
+    let toastTimeout = null;
 
     function toast(msg) {
       const el = document.getElementById('toast');
       el.textContent = msg;
       el.style.display = 'block';
-      setTimeout(() => { el.style.display = 'none'; }, 3000);
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => { el.style.display = 'none'; }, 3500);
     }
 
     function api(fnName, ...args) {
       return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('انتهت مهلة الاتصال بالخادم (25 ثانية). يرجى التحقق من اتصال الإنترنت.'));
+        }, 25000);
+
+        if (!google || !google.script || !google.script.run) {
+          clearTimeout(timeout);
+          reject(new Error('بيئة تشغيل Google Apps Script غير متوفرة.'));
+          return;
+        }
+
         google.script.run
-          .withSuccessHandler(resolve)
-          .withFailureHandler(reject)[fnName](...args);
+          .withSuccessHandler((response) => {
+            clearTimeout(timeout);
+            resolve(response);
+          })
+          .withFailureHandler((error) => {
+            clearTimeout(timeout);
+            reject(error);
+          })[fnName](...args);
       });
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      // Set default form date to today
-      const todayIso = new Date().toISOString().split('T')[0];
+      // Strip any exposed key parameter from the URL address bar & history
+      if (window.history && window.history.replaceState) {
+        try {
+          const cleanUrl = window.location.pathname + '?page=admin';
+          window.history.replaceState(null, document.title, cleanUrl);
+        } catch (e) {}
+      }
+
+      // Set default form date to local date (avoids UTC timezone shift)
+      const now = new Date();
+      const localYear = now.getFullYear();
+      const localMonth = String(now.getMonth() + 1).padStart(2, '0');
+      const localDay = String(now.getDate()).padStart(2, '0');
       const dateEl = document.getElementById('formDate');
-      if (dateEl) dateEl.value = todayIso;
+      if (dateEl) dateEl.value = `${localYear}-${localMonth}-${localDay}`;
 
       if (ADMIN_KEY && (IS_PRE_AUTHORIZED || ADMIN_KEY.length > 0)) {
         showDashboardView();
@@ -623,12 +676,58 @@
         document.getElementById('sumExpectedCash').textContent = dashboardData.summary.todayExpectedCash + ' ج.م';
         document.getElementById('sumPendingCount').textContent = dashboardData.summary.pendingReviewCount;
 
+        // Render Pending Deposits List
+        renderPendingReview(dashboardData.pendingReview);
+
         // Render Tabs
         renderMatchList('todayList', dashboardData.selectedMatches, false);
         renderMatchList('tomorrowList', dashboardData.tomorrowMatches, true);
       } catch (e) {
         toast('خطأ في الاتصال: ' + e.message);
       }
+    }
+
+    function renderPendingReview(pendingList) {
+      const sec = document.getElementById('pendingReviewSection');
+      const listEl = document.getElementById('pendingReviewList');
+      const badge = document.getElementById('pendingBadgeCount');
+      if (!sec || !listEl) return;
+
+      if (!pendingList || pendingList.length === 0) {
+        sec.style.display = 'none';
+        listEl.innerHTML = '';
+        return;
+      }
+
+      sec.style.display = 'block';
+      if (badge) badge.textContent = pendingList.length;
+      listEl.innerHTML = '';
+
+      pendingList.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'booking-card';
+        card.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+        card.style.background = 'rgba(24, 18, 18, 0.85)';
+
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="match-time">${escapeHtml(m.timeSlot)} <span style="font-size:12px;color:var(--accent-gold);margin-right:6px;">(${escapeHtml(m.dayName)} ${escapeHtml(m.dateStr)})</span></div>
+            <span class="status-pill status-PendingDeposit">${escapeHtml(m.status)}</span>
+          </div>
+          <div class="card-body">
+            <div class="player-line">
+              <span>${escapeHtml(m.playerName)}</span>
+              ${m.phone ? `<a href="tel:${escapeHtml(m.phone)}" class="phone-link">📞 ${escapeHtml(m.phone)}</a>` : ''}
+            </div>
+            <div>الملعب: <strong>${escapeHtml(m.pitchId)}</strong> • العربون: <strong>${escapeHtml(m.deposit)} ج.م</strong> • المتبقي كاش: <strong>${escapeHtml(m.remainingCash)} ج.م</strong></div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-act btn-confirm" onclick="updateStatus('${escapeHtml(m.bookingId)}', 'Confirmed')">✅ تأكيد العربون</button>
+            <button class="btn-act btn-cancel" onclick="updateStatus('${escapeHtml(m.bookingId)}', 'Cancelled')">❌ إلغاء</button>
+          </div>
+        `;
+        listEl.appendChild(card);
+      });
     }
 
     function renderMatchList(containerId, matchesByPitch, isTomorrow) {
@@ -661,7 +760,7 @@
           if (isTomorrow) {
             if (m.reminderUrl) {
               actionButtons = `
-                <a href="${m.reminderUrl}" target="_blank" class="btn-act btn-wa" onclick="markSent('${m.bookingId}')">
+                <a href="${escapeHtml(m.reminderUrl)}" target="_blank" class="btn-act btn-wa" onclick="markSent('${escapeHtml(m.bookingId)}')">
                   <span>📲</span> إرسال تذكير واتساب
                   ${isSent ? '<span class="sent-badge">✓ تم الإرسال</span>' : ''}
                 </a>
@@ -671,27 +770,30 @@
             // Today Quick Actions
             if (m.status === 'Pending Deposit') {
               actionButtons = `
-                <button class="btn-act btn-confirm" onclick="updateStatus('${m.bookingId}', 'Confirmed')">✅ تأكيد العربون</button>
-                <button class="btn-act btn-cancel" onclick="updateStatus('${m.bookingId}', 'Cancelled')">❌ إلغاء</button>
+                <button class="btn-act btn-confirm" onclick="updateStatus('${escapeHtml(m.bookingId)}', 'Confirmed')">✅ تأكيد العربون</button>
+                <button class="btn-act btn-cancel" onclick="updateStatus('${escapeHtml(m.bookingId)}', 'Cancelled')">❌ إلغاء</button>
               `;
             } else if (m.status === 'Confirmed' || m.status === 'Owner Reserved') {
               actionButtons = `
-                <button class="btn-act btn-noshow" onclick="flagNoShow('${m.bookingId}')">🚫 لم يحضر (No-Show)</button>
+                <button class="btn-act btn-noshow" onclick="flagNoShow('${escapeHtml(m.bookingId)}')">🚫 لم يحضر (No-Show)</button>
               `;
             }
           }
 
+          const rawStatus = m.status || '';
+          const statusClass = 'status-' + escapeHtml(rawStatus.replace(/[\s-]+/g, ''));
+
           card.innerHTML = `
             <div class="card-top">
-              <div class="match-time">${m.timeSlot}</div>
-              <span class="status-pill status-${m.status.replace(/\s+/g, '')}">${m.status}</span>
+              <div class="match-time">${escapeHtml(m.timeSlot)}</div>
+              <span class="status-pill ${statusClass}">${escapeHtml(m.status)}</span>
             </div>
             <div class="card-body">
               <div class="player-line">
-                <span>${m.playerName}</span>
-                ${m.phone ? `<a href="tel:${m.phone}" class="phone-link">📞 ${m.phone}</a>` : ''}
+                <span>${escapeHtml(m.playerName)}</span>
+                ${m.phone ? `<a href="tel:${escapeHtml(m.phone)}" class="phone-link">📞 ${escapeHtml(m.phone)}</a>` : ''}
               </div>
-              <div>السعر: ${m.price} ج.م • العربون: ${m.deposit} ج.م • <strong>المتبقي كاش: ${m.remainingCash} ج.م</strong></div>
+              <div>السعر: ${escapeHtml(m.price)} ج.م • العربون: ${escapeHtml(m.deposit)} ج.م • <strong>المتبقي كاش: ${escapeHtml(m.remainingCash)} ج.م</strong></div>
             </div>
             ${actionButtons ? `<div class="card-actions">${actionButtons}</div>` : ''}
           `;

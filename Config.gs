@@ -117,7 +117,9 @@ var CACHE_KEY_SETTINGS = 'san_siro_settings_v1';
 var SETTINGS_CACHE_TTL_SEC = 300; // 5 minutes
 
 /**
- * Parses hour settings supporting 12-hour (05:00 PM, 5 PM, 5 م) or 24-hour formats.
+/**
+ * Parses hour settings supporting 12-hour (05:00 PM, 5 PM, 5 م) or 24-hour formats,
+ * including Google Sheets Date objects.
  *
  * @param {*} raw
  * @param {number} defaultVal
@@ -127,23 +129,48 @@ var SETTINGS_CACHE_TTL_SEC = 300; // 5 minutes
  */
 function parseConfigHour(raw, defaultVal, isCloseHour, openHour) {
   if (raw === undefined || raw === null || raw === '') return defaultVal;
-  if (raw instanceof Date) return raw.getHours();
-  var match = String(raw).trim().match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM|am|pm|ص|م)?/i);
-  if (match) {
-    var h = parseInt(match[1], 10);
-    var p = match[3] ? match[3].toUpperCase() : '';
-    if (p === 'PM' || p === 'م') {
-      if (h < 12) h += 12;
-    } else if (p === 'AM' || p === 'ص') {
-      if (h === 12) h = 0;
+  var h;
+  if (raw instanceof Date) {
+    h = raw.getHours();
+  } else {
+    var match = String(raw).trim().match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM|am|pm|ص|م)?/i);
+    if (match) {
+      h = parseInt(match[1], 10);
+      var p = match[3] ? match[3].toUpperCase() : '';
+      if (p === 'PM' || p === 'م') {
+        if (h < 12) h += 12;
+      } else if (p === 'AM' || p === 'ص') {
+        if (h === 12) h = 0;
+      }
+    } else {
+      var num = Number(raw);
+      h = isNaN(num) ? defaultVal : num;
     }
-    if (isCloseHour && openHour !== undefined && h < openHour && openHour >= 12) {
-      h += 24;
-    }
-    return h;
   }
-  var num = Number(raw);
-  return isNaN(num) ? defaultVal : num;
+  if (isCloseHour && openHour !== undefined && h < openHour && openHour >= 12) {
+    h += 24;
+  }
+  return h;
+}
+
+/**
+ * Parses a numeric setting allowing legitimate 0 values, with fallback and range boundaries.
+ *
+ * @param {*} rawVal
+ * @param {number} defaultVal
+ * @param {number} [minVal]
+ * @param {number} [maxVal]
+ * @returns {number}
+ */
+function parseNumericSetting(rawVal, defaultVal, minVal, maxVal) {
+  if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '') {
+    return defaultVal;
+  }
+  var num = Number(rawVal);
+  if (isNaN(num)) return defaultVal;
+  if (minVal !== undefined && num < minVal) return minVal;
+  if (maxVal !== undefined && num > maxVal) return maxVal;
+  return num;
 }
 
 /**
@@ -189,21 +216,21 @@ function getSettings(forceRefresh) {
 
   var settings = {
     stadiumName: String(rawMap['Stadium_Name'] || 'San Siro').trim(),
-    adminPassword: String(rawMap['Admin_Password'] || rawMap['Admin_PIN'] || 'sansiro2026').trim(),
-    pitch1DayRate: Number(rawMap['Pitch_1_Day_Rate']) || 200,
-    pitch1NightRate: Number(rawMap['Pitch_1_Night_Rate']) || 250,
-    pitch2DayRate: Number(rawMap['Pitch_2_Day_Rate']) || 180,
-    pitch2NightRate: Number(rawMap['Pitch_2_Night_Rate']) || 220,
+    adminPassword: String(rawMap['Admin_Password'] || rawMap['Admin_PIN'] || '').trim(),
+    pitch1DayRate: parseNumericSetting(rawMap['Pitch_1_Day_Rate'], 200, 0),
+    pitch1NightRate: parseNumericSetting(rawMap['Pitch_1_Night_Rate'], 250, 0),
+    pitch2DayRate: parseNumericSetting(rawMap['Pitch_2_Day_Rate'], 180, 0),
+    pitch2NightRate: parseNumericSetting(rawMap['Pitch_2_Night_Rate'], 220, 0),
     nightStartHour: nightHour,
     nightStartMinutes: nightHour * 60,
     openHour: openHour,
     closeHour: closeHour,
-    slotMinutes: Number(rawMap['Slot_Minutes']) || 60,
-    depositAmount: Number(rawMap['Deposit_Amount']) || 50,
-    lockMinutes: Number(rawMap['Lock_Minutes']) || 15,
-    bookingDaysAhead: Number(rawMap['Booking_Days_Ahead']) || 7,
-    noShowThreshold: Number(rawMap['No_Show_Threshold']) || 2,
-    blockThreshold: Number(rawMap['Block_Threshold']) || 3,
+    slotMinutes: parseNumericSetting(rawMap['Slot_Minutes'], 60, 15, 240),
+    depositAmount: parseNumericSetting(rawMap['Deposit_Amount'], 50, 0),
+    lockMinutes: parseNumericSetting(rawMap['Lock_Minutes'], 15, 1, 60),
+    bookingDaysAhead: parseNumericSetting(rawMap['Booking_Days_Ahead'], 7, 1, 60),
+    noShowThreshold: parseNumericSetting(rawMap['No_Show_Threshold'], 2, 1, 20),
+    blockThreshold: parseNumericSetting(rawMap['Block_Threshold'], 3, 1, 20),
     paymentInstructions: String(rawMap['Payment_Instructions'] || 'يرجى تحويل العربون لتأكيد الحجز').trim(),
     vodafoneCashNumber: String(rawMap['Vodafone_Cash_Number'] || '').trim(),
     instaPayHandle: String(rawMap['InstaPay_Handle'] || '').trim(),
@@ -385,6 +412,28 @@ function parseSlotStart(timeSlot, openHour) {
   }
 
   return hours * 60 + minutes;
+}
+
+/**
+ * Generates canonical slot objects based on operating parameters.
+ *
+ * @param {number} openHour
+ * @param {number} closeHour
+ * @param {number} slotMins
+ * @returns {Array<{startMinutes: number, timeSlot: string}>}
+ */
+function getCanonicalSlots(openHour, closeHour, slotMins) {
+  var generatedSlots = [];
+  var totalOpenMinutes = (closeHour - openHour) * 60;
+  var steps = Math.floor(totalOpenMinutes / slotMins);
+  for (var s = 0; s < steps; s++) {
+    var slotStart = (openHour * 60) + (s * slotMins);
+    generatedSlots.push({
+      startMinutes: slotStart,
+      timeSlot: formatSlot(slotStart, slotMins)
+    });
+  }
+  return generatedSlots;
 }
 
 // ============================================================================

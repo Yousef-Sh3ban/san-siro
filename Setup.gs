@@ -177,11 +177,6 @@ function setupBookingsSheet(ss) {
   headerRange.setHorizontalAlignment('center');
   sheet.setFrozenRows(1);
 
-  // Remaining_Cash Array Formula in K1
-  sheet.getRange(1, COL.BOOKINGS.REMAINING_CASH).setFormula(
-    '={\"Remaining_Cash\"; ARRAYFORMULA(IF(LEN(A2:A)=0, \"\", IF(ISNUMBER(I2:I), I2:I - IF(ISNUMBER(J2:J), J2:J, 0), \"\")))}'
-  );
-
   // Column formatting
   sheet.getRange('A2:A').setNumberFormat('@'); // Booking ID
   sheet.getRange('B2:B').setNumberFormat('yyyy-mm-dd'); // Date
@@ -571,9 +566,10 @@ function rotateAdminKey() {
 function generateSecureRandomToken(length) {
   var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   var result = '';
+  var entropy = Utilities.getUuid() + '-' + Utilities.getUuid() + '-' + new Date().getTime() + '-' + Session.getTemporaryActiveUserKey();
   var rawBytes = Utilities.computeDigest(
     Utilities.DigestAlgorithm.SHA_256,
-    Math.random() + '_' + new Date().getTime() + '_' + Session.getTemporaryActiveUserKey()
+    entropy
   );
   for (var i = 0; i < length; i++) {
     var byteVal = (rawBytes[i % rawBytes.length] + 256) % 256;
